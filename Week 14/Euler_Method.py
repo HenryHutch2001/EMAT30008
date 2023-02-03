@@ -24,4 +24,12 @@ def solve_to(x1,t1,t2,h):
     plt.grid()
     plt.show()
 
-solve_to(1,1,5,0.4)
+
+def rk_step(xn,t,h):
+    k1 = f(t,xn)
+    k2 = f(t+h/2,xn + k1/2)
+    k3 = f(t+h/2,xn+h*(k2/2))
+    k4 = f(t+h,xn+(h*k3))
+    xn1 = xn + (h/6)*(k1 + 2*k2 + 2*k3 + k4)
+    print(xn1)
+    return xn1

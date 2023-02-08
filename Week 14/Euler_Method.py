@@ -46,7 +46,7 @@ def solve_toRK(x0,t1,t2,h):
 
 def solve_to(x0,t1,t2,h):
     deltat_max = 1
-        if h >= deltat_max:
+    if h >= deltat_max:
         print("Step size too large for accurate approximation")
         exit(solve_to)
     method = input("Which approximation method would you like to use? Please enter either Euler or Runge-Kutta ").lower()

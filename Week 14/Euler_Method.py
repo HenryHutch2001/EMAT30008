@@ -1,11 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from sys import exit
 
 f = lambda t, x:x
 
 def exact_solution(t):
     return np.exp(t) 
-
 "Creating the individual step function for Eulers method"
 def euler_step(xn,t,h):
     x = xn + h*f(t,xn)
@@ -33,6 +33,10 @@ def rk_step(xn,t,h):
     return xn1
 "Creating the function for approximation using RK4 method"
 def solve_toRK(x0,t1,t2,h):
+   deltat_max = 1
+   if h >= deltat_max:
+    print("Step size too large for accurate approximation")
+    exit(solve_toRK)
    t = np.arange(t1,t2+h,h)
    x = np.zeros_like(t)
    x[0] = x0
@@ -40,6 +44,19 @@ def solve_toRK(x0,t1,t2,h):
         x[i] = rk_step(x[i-1],t[i-1],h)
    return t,x   
 
+def solve_to(x0,t1,t2,h):
+    deltat_max = 1
+        if h >= deltat_max:
+        print("Step size too large for accurate approximation")
+        exit(solve_to)
+    method = input("Which approximation method would you like to use? Please enter either Euler or Runge-Kutta ").lower()
+    if method == ("Euler").lower():
+        solve_toEU(x0,t1,t2,h)
+    elif method == ("Runge-Kutta").lower():
+        solve_toRK(x0,t1,t2,h)
+    else:
+        print("Please provide a correct input")
+        exit(solve_to)
 h = [0.1, 0.05, 0.01, 0.005, 0.001]
 "Defining the different step sizes we use for calculation"
 x0 = 1
@@ -71,3 +88,4 @@ ax.set_ylabel("Error")
 ax.set_title("Error as a function of timestep for the approximation methods")
 ax.legend()
 plt.show()
+

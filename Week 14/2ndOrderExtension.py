@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 f1 = lambda t, x: np.array([x[1], -x[0]]) # x' = y, y' = -x
-x0 = np.array([1, 0]) # Initial condition, x = 1, y = 0
+x0 = np.array([1, 1]) # Initial condition, x = 1, y = 0
 
 def euler_step(f,xn,t,h):
     x = xn + h*f(t,xn)
@@ -24,6 +24,23 @@ def solve_to_system(f, x0, t1, t2, h, step_function):
         x = step_function(f,x,t,h)
         xval.append(x)
     return t, xval
-t,x = solve_to_system(f1,x0,0,10,0.01,rk_step)
-plt.plot(t,x)
+    
+t,EulerValues = solve_to_system(f1,x0,0,10,0.01,rk_step)
+t1,RKValues = solve_to_system(f1,x0,0,10,0.01,euler_step)
+
+XEuler = [x[0] for x in EulerValues]
+YEuler = [x[1] for x in EulerValues]
+
+XRK = [x[0] for x in RKValues]
+YRK = [x[1] for x in RKValues]
+
+
+plt.plot(t,XEuler,label = 'X, Euler Approximation')
+plt.plot(t,YEuler,label='Y, Euler Approximation')
+plt.plot(t1,XRK,label='X, RK Approximation')
+plt.plot(t1,YRK,label='Y, RK Approximation')
+
+plt.xlabel('X')
+plt.ylabel('t')
+plt.legend()
 plt.show()

@@ -3,6 +3,9 @@ import matplotlib.pyplot as plt
 
 f1 = lambda t, x: np.array([x[1], -x[0]]) # x' = y, y' = -x
 x0 = np.array([1, 1]) # Initial condition, x = 1, y = 0
+def true_fun(t):
+    x = np.cos(t) + np.sin(t)
+    return x
 
 def euler_step(f,xn,t,h):
     x = xn + h*f(t,xn)
@@ -35,8 +38,11 @@ YEuler = [x[1] for x in EulerValues]
 XRK = [x[0] for x in RKValues]
 YRK = [x[1] for x in RKValues]
 
-plt.plot(t,XEuler,label = 'X, Euler Approximation')
-plt.plot(t1,XRK,label='X, RK Approximation')
+Xtrue = true_fun(t)
+
+plt.plot(t,XEuler,label = 'X, Euler Approximation',color='red')
+plt.plot(t1,XRK,label='X, RK Approximation', color='blue')
+plt.plot(t,Xtrue,label='True solution', color ='black',linestyle =':',linewidth=5 )
 plt.xlabel('t')
 plt.ylabel('X')
 plt.title('X Approximation for both methods with step size '+str(h))
@@ -44,8 +50,8 @@ plt.legend()
 plt.grid()
 plt.show()
 
-plt.plot(t1,YRK,label='Y, RK Approximation')
-plt.plot(t,YEuler,label='Y, Euler Approximation')
+plt.plot(t1,YRK,label='Y, RK Approximation',color='red')
+plt.plot(t,YEuler,label='Y, Euler Approximation', color='blue')
 plt.xlabel('t')
 plt.ylabel('Y')
 plt.title('Y Approximation for both methods'+str(h))

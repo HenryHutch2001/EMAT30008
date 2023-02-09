@@ -24,9 +24,10 @@ def solve_to_system(f, x0, t1, t2, h, step_function):
         x = step_function(f,x,t,h)
         xval.append(x)
     return t, xval
-    
-t,EulerValues = solve_to_system(f1,x0,0,10,0.01,rk_step)
-t1,RKValues = solve_to_system(f1,x0,0,10,0.01,euler_step)
+
+h = 0.1
+t,EulerValues = solve_to_system(f1,x0,0,10,h,euler_step)
+t1,RKValues = solve_to_system(f1,x0,0,10,h,rk_step)
 
 XEuler = [x[0] for x in EulerValues]
 YEuler = [x[1] for x in EulerValues]
@@ -34,13 +35,22 @@ YEuler = [x[1] for x in EulerValues]
 XRK = [x[0] for x in RKValues]
 YRK = [x[1] for x in RKValues]
 
-
 plt.plot(t,XEuler,label = 'X, Euler Approximation')
-plt.plot(t,YEuler,label='Y, Euler Approximation')
 plt.plot(t1,XRK,label='X, RK Approximation')
-plt.plot(t1,YRK,label='Y, RK Approximation')
-
-plt.xlabel('X')
-plt.ylabel('t')
+plt.xlabel('t')
+plt.ylabel('X')
+plt.title('X Approximation for both methods with step size '+str(h))
 plt.legend()
+plt.grid()
 plt.show()
+
+plt.plot(t1,YRK,label='Y, RK Approximation')
+plt.plot(t,YEuler,label='Y, Euler Approximation')
+plt.xlabel('t')
+plt.ylabel('Y')
+plt.title('Y Approximation for both methods'+str(h))
+plt.legend()
+plt.grid()
+plt.show()
+
+

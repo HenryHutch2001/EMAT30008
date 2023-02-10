@@ -11,6 +11,8 @@ def euler_step(f,xn,t,h):
     x = xn + h*f(t,xn)
     return x
 
+#Re-do figures!!
+
 def rk_step(f,xn,t,h):
     k1 = f(t,xn)
     k2 = f(t+h/2,xn + h*k1/2)
@@ -29,8 +31,8 @@ def solve_to_system(f, x0, t1, t2, h, step_function):
     return t, xval
 
 h = 0.1
-t,EulerValues = solve_to_system(f1,x0,0,10,h,euler_step)
-t1,RKValues = solve_to_system(f1,x0,0,10,h,rk_step)
+t,EulerValues = solve_to_system(f1,x0,0,100,h,euler_step)
+t1,RKValues = solve_to_system(f1,x0,0,100,h,rk_step)
 
 XEuler = [x[0] for x in EulerValues]
 YEuler = [x[1] for x in EulerValues]
@@ -50,8 +52,8 @@ plt.legend()
 plt.grid()
 plt.show()
 
-plt.plot(t1,YRK,label='Y, RK Approximation',color='red')
-plt.plot(t,YEuler,label='Y, Euler Approximation', color='blue')
+plt.plot(t1,YRK,label='Y, RK Approximation',color='blue')
+plt.plot(t,YEuler,label='Y, Euler Approximation', color='red')
 plt.xlabel('t')
 plt.ylabel('Y')
 plt.title('Y Approximation for both methods'+str(h))

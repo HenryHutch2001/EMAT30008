@@ -6,7 +6,7 @@ from scipy import integrate
 
 def ode(u,t):
     a = 1
-    b = 0.1
+    b = 0.4
     d = 0.1
     x = u[0]
     y = u[1]

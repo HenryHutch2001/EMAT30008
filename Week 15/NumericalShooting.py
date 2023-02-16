@@ -1,28 +1,32 @@
 #Numerical shooting 
-import numpy as np
-from matplotlib import pyplot as plt
-from scipy import integrate
+import scipy
+import matplotlib.pyplot as plt
+a =1
+b =0.1
+d =0.1
 
+def ode(t,y,a,b,d): #Keeping t in in case our ode reuires it
+    dx_dt = y[0]*(1-y[0]) - (a*y[0]*y[1])/(d+y[0])
+    dy_dt = b*y[1]*(1-(y[1]/y[0]))
 
-def ode(u,t): #Defining the ODE
-    a = 1
-    b = 0.4
-    d = 0.1
-    x = u[0]
-    y = u[1]
-    dxdt = x*(1-x) -(a*x*y)/(d+x)
-    dydt = (b*y)*(1 - y/x)
-    return [dxdt, dydt]
+    return [dx_dt, dy_dt]
 
-u0 = [5,5] #Initial conditions, e.g number of prey/predators
-t = np.linspace(0,200,200) #Defining the time 
-x = integrate.odeint(ode,u0,t) #Using the integrate.ode function to solve the ODE
-
-plt.plot(t,x[:,0],label = "Predators") #Plotting the first column of the solution 
-plt.plot(t,x[:,1], label = "Prey") #Plotting the second column
-plt.xlabel('t')
-plt.ylabel('Population') #Graph stuff
+# SOlving the ode
+predator = scipy.integrate.solve_ivp(ode,[0, 100],[0.5,0.5],args=[1,0.1,0.1], rtol = 1e-4)
+#Plotting ODE
+plt.plot(predator.t,predator.y[0,:], label = 'X')
+plt.plot(predator.t,predator.y[1,:], label = 'y')
 plt.legend()
 plt.show()
 
 
+def shooting(x): #Finds the points and time period of the limit cycle
+    condition_1 = x[:2]- scipy.integrate.solve_ivp(ode,[0, x[2]],x[:2],args=[a,b,d], rtol = 1e-4).y[:,-1]
+    condition_2 = ode(0,x[:2],a,b,d)[0] 
+
+    return [*condition_1,condition_2] # THe * gets rid of the list within
+
+initial_guess = [0.8, 0.2,30]
+result = scipy.optimize.root(shooting, x0 = initial_guess)
+
+print(result.x)

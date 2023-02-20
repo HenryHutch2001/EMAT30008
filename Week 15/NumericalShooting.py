@@ -26,6 +26,7 @@ plt.show()
 # %%
 #Plotting the phase portrait
 plt.plot(Solution.y[0,:],Solution.y[1,:]) #Plots the phase portrait, the value of X against Y
+plt.show()
 #We can see that the ODE eventually converges to a limit cycle  
 
 # %%

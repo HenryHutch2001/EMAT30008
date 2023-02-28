@@ -21,15 +21,6 @@ Solution = scipy.integrate.solve_ivp(ode,[0, 100],[0.5,0.5],t_eval=t_eval,args=[
 # %%
 #Isolating a periodic orbit:
 #For x:
-XPer = 0.8
-tol = 1e-3
-for i in range(1,len(Solution.y[0])):
-    boob = abs(XPer - Solution.y[0][i])
-    if boob <= tol:
-        print(Solution.y[0][i])
-    else:
-        continue
-
 # %%
 #Plotting ODE
 plt.plot(Solution.t,Solution.y[0,:], label = 'X') #Plotting X value by extracting the first column in the solution
@@ -50,7 +41,7 @@ plt.show()
 
 #To isolate a periodic orbit i'd just 
 
-def shooting(U): #Finds the points and time period of the limit cycle
+def shooting(ode,U): #Finds the points and time period of the limit cycle
     x0,y0,T = U #Extracting the constituent parts of the input for the shooting function
     X0 = np.array((x0,y0)) #Putting the initial conditions into an array called X0, which is used in the 
     #ODE solver as y 
@@ -63,10 +54,8 @@ def shooting(U): #Finds the points and time period of the limit cycle
     #although the equations do not depend on t. It effectively returns the gradient of the x line for which we want to find the roots
     # of using root. 
     return [*condition_1,condition_2] # THe * gets rid of the list within
-
 initial_guess = [0.8, 0.2,30] #Defines our initial guess for the shooting method, which says we guess
 #that the conditions 1&2 are satisfied at the point x = 0.8, y = 0.2, with a period of 30 seconds
-
 
 result = scipy.optimize.root(shooting, x0 = initial_guess)#Finds the parameters for x0,y0 and T for which both conditions
 #are satisfied.

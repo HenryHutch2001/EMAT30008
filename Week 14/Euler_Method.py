@@ -1,17 +1,17 @@
+# %%
 import numpy as np
 import matplotlib.pyplot as plt
 from sys import exit
-
+# %%
 f = lambda t, x:x
-
 def exact_solution(t):
     return np.exp(t) 
-"Creating the individual step function for Eulers method"
+# %%
+
 def euler_step(xn,t,h):
     x = xn + h*f(t,xn)
-    "Single step Euler function"
     return x
-"Creating the function for approximation using Eulers method"
+
 def solve_toEU(x0,t1,t2,h):
    deltat_max = 1
    if h >= deltat_max:
@@ -23,7 +23,7 @@ def solve_toEU(x0,t1,t2,h):
    for i in range(1,len(t)):
         x[i] = euler_step(x[i-1],t[i-1],h)
    return t,x   
-"Creating the individual step function for RK4 method"
+# %%
 def rk_step(xn,t,h):
     k1 = f(t,xn)
     k2 = f(t+h/2,xn + h*k1/2)

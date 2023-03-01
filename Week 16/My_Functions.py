@@ -295,5 +295,4 @@ def shooting(x0,ode):
         condition_2 = ode(0,x0[:2])[0] 
         return [*condition_1,condition_2]
     result = scipy.optimize.root(cons, x0 = x0, args=(ode,))
-    print(result.x)
-# %%
+    return(result.x)

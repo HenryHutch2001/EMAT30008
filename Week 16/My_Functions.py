@@ -4,14 +4,6 @@ import matplotlib.pyplot as plt
 from sys import exit
 import scipy
 # %%
-def ode(t,y):
-    sigma = -1
-    beta = 1
-    u1 = y[0]
-    u2 = y[1]
-    du1_dt = np.float64(beta*u1 - u2 + sigma*u1*(u1**2 + u2**2))
-    du2_dt = np.float64(u1 + beta*u2 +sigma*u2*(u1**2 + u2**2))
-    return [du1_dt, du2_dt]
 def euler_step(f,xn,t,h):
     """
     A function that uses the euler approximation method to find a single step of the solution

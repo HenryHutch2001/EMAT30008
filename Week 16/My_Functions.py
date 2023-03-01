@@ -49,9 +49,11 @@ def solve_to(f,x0,t1,t2,h):
         exit(solve_to)
     method = input("Which approximation method would you like to use? Please enter either Euler or Runge-Kutta ").lower()
     if method == ("Euler").lower():
-        solve_toEU(f,x0,t1,t2,h)
+        t,x = solve_toEU(f,x0,t1,t2,h)
+        return t,x
     elif method == ("Runge-Kutta").lower():
-        solve_toRK(f,x0,t1,t2,h)
+        t,x = solve_toRK(f,x0,t1,t2,h)
+        return t,x
     else:
         print("Please provide a correct input")
         exit(solve_to)

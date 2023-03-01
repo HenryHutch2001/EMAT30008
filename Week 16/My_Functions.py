@@ -4,12 +4,99 @@ import matplotlib.pyplot as plt
 from sys import exit
 import scipy
 # %%
+def ode(t,y):
+    sigma = -1
+    beta = 1
+    u1 = y[0]
+    u2 = y[1]
+    du1_dt = np.float64(beta*u1 - u2 + sigma*u1*(u1**2 + u2**2))
+    du2_dt = np.float64(u1 + beta*u2 +sigma*u2*(u1**2 + u2**2))
+    return [du1_dt, du2_dt]
 def euler_step(f,xn,t,h):
+    """
+    A function that uses the euler approximation method to find a single step of the solution
+
+    SYNTAX
+    ------
+    The function is called in the following way:
+
+    euler_step(f,xn,t,h);
+
+    WHERE:
+
+        f: f is the ODE you wish to approximate, the form of the ode
+        input should be as follows;
+
+            def PredPrey(t,x0): Defining the ode as a function with inputs t and x0, time and initial conditions
+            a = 1     |
+            b = 0.1   |  Defining any parameters inside the function handle, you could leave them out of the function but you
+            d = 0.1   |  would have to define them as arguments when calling the function
+            x = x0[0] Splitting the initial conditions array into its constituent parts
+            y = x0[1]
+            dx_dt = x*(1-x) - (a*x*y)/(d+x) #Defining the differential equations
+            dy_dt = b*y*(1-(y/x))
+            return [dx_dt, dy_dt] #Returns the value of the ode as an array 
+        
+        xn: xn is the value of the ODE for which you wish to iterate a step further, the form of this input should be as follows;
+
+            xn = [x1,x2,...,xi], where i is the number of dimensions the ode has
+
+        t: t is the time value for which you wish to approximate your ODE at, in the form of an integer or floating point number
+
+        h: h is the value of the timestep for which you want to evaluate the ODE after, a smaller step size results in a more
+        accurate approximation to the ODE
+
+    OUTPUT
+    ------
+
+    The euler_step function returns a numpy array containing an approximation to the ODE at a time t+h
+
+    """
     f = np.array(f(t,xn))
     x = xn + h*f
     return x
 # %%
 def solve_toEU(f,x0,t1,t2,h):
+   """
+   A function that uses the euler method of approximation to estimate the values of an ODE between a given timespan
+
+   SYNTAX
+    ------
+    The function is called in the following way:
+
+    solve_toEU(f,x0,t1,t2,h);
+
+    WHERE:
+
+        f: f is the ODE you wish to approximate, the form of the ode
+        input should be as follows;
+
+            def PredPrey(t,x0): Defining the ode as a function with inputs t and x0, time and initial conditions
+            a = 1     |
+            b = 0.1   |  Defining any parameters inside the function handle, you could leave them out of the function but you
+            d = 0.1   |  would have to define them as arguments when calling the function
+            x = x0[0] Splitting the initial conditions array into its constituent parts
+            y = x0[1]
+            dx_dt = x*(1-x) - (a*x*y)/(d+x) #Defining the differential equations
+            dy_dt = b*y*(1-(y/x))
+            return [dx_dt, dy_dt] #Returns the value of the ode as an array 
+        
+        x0: x0 is the value of the ODE for which you wish to iterate from, it's initial conditions. The form of this input should be as follows;
+
+            x0 = [x1,x2,...,xi], where i is the number of dimensions the ode has
+
+        t1 & t2 : t1 & t2 are the time values for which you wish to approximate your ODE between, in the form of integers or floating point numbers
+
+        h: h is the value of the timestep for which you want to evaluate the ODE for, a smaller step size results in a more
+        accurate approximation to the ODE. If h is too large, the function will display an error message explaining that the
+        chosen stepsize is too large for an accurate approximation to the ODE.
+
+    OUTPUT
+    ------
+
+    The solve_toEU function returns a 2 values as a tuple. It returns the approximated values of the independent variables within the timespan
+    and the values for the time at which they were approximated. 
+   """
    deltat_max = 1
    if h >= deltat_max:
     print("Step size too large for accurate approximation")
@@ -19,7 +106,8 @@ def solve_toEU(f,x0,t1,t2,h):
    for i in range(1,len(t)):
         Value = euler_step(f,x[i-1],t[i-1],h)
         x = np.vstack([x, Value]) 
-   return t,x  
+   return t,x 
+print(type(solve_toEU(ode,[1,1],0,1,0.1))) 
 # %%
 def rk_step(f,xn,t,h):
     k1 = np.array(f(t,xn))
@@ -58,7 +146,6 @@ def solve_to(f,x0,t1,t2,h):
         print("Please provide a correct input")
         exit(solve_to)
 # %%
-
 def shooting(x0,ode):
     """
     A function that uses the numerical shooting method in order to find the limit cycles of an ode

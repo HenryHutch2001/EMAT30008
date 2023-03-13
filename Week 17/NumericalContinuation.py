@@ -8,6 +8,14 @@ from scipy.integrate import solve_ivp
 # %%
 def function(x,c):
     return x**3 -x + c
+
+v = np.array(([0, 1],[1, 2]))
+a0,x0 = v[0]
+a1,x1 = v[1]
+secant = v[0]-v[1]
+v_predict = v[1]+secant
+v_true = root(function,x0=x1,args=(a1))
+print(v_true.x)
 # %%
 def HopfNormal(t,y,beta):
     sigma = -1
@@ -18,6 +26,13 @@ def HopfNormal(t,y,beta):
     return [du1_dt, du2_dt]
 
 # %%
+def CubicContStep(f,x0,p0,p1):
+    p_range = np.linspace(p0,p1,1)
+    solutions = np.array([x0])
+    p_value = np.array([p0])
+
+#Need to define a function for cubic continuation that generates 1 step 
+
 def CubicCont(f,x0,p0,p1):
     p_range = np.linspace(p0,p1,1000)
     solutions = np.array([x0])
@@ -29,12 +44,21 @@ def CubicCont(f,x0,p0,p1):
         if sol.success == True:
             solutions = np.append(solutions,sol.x)
             p_value = np.append(p_value,p)
-    return p_value,solutions
+    return p_value[1:],solutions[1:]
 
-x,y = CubicCont(function,0.5,-2,2)
-plt.plot(x,y)
+x,y = CubicCont(function,1,-2,2)
+plt.plot(x,y,'o')
 plt.show() 
 
+#Develop CubicContinuation so that it returns only 2 values, v0 and v1
+
+#PYTEST
+# %%
+
+def CubePsuedo(f,x0,p0,p1):
+    p_range = np.linspace(p0,p1,1000)
+    boop = root(f,x0=x0,)
+    v0 = 
 # %%
 """ def NumCont(ode,p0,p1,u0):
     p_range = np.linspace(p0,p1,100)

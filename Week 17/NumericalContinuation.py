@@ -8,7 +8,6 @@ from scipy.integrate import solve_ivp
 # %%
 def function(x,c):
     return x**3 -x + c
-
 # %%
 def HopfNormal(t,y,beta):
     sigma = -1
@@ -19,39 +18,43 @@ def HopfNormal(t,y,beta):
     return [du1_dt, du2_dt]
 
 # %%
-def CubicContStep(f,x0,p0):
-    p1 = p0 + 0.1
+def CubicContStep(f,x0,p0,p1):
+    p_range = np.linspace(p0,p1,1000)
     solutions = np.array([x0])
-    p_values = np.array([p0,p1])
-    for i in range(1,len(p_values)):
-         p = p_values[i]
-         predicted_value = solutions[-1]
-         sol = root(f,x0=predicted_value,args=(p))
-    if sol.success == True:
-        solutions = np.append(solutions,sol.x)
-        p_value = np.append(p_value,p)
-    return p_values[1:],solutions[1:]
+    p_value = np.array([p0])
+    for i in range(0,len(p_range)-1):
+        p = p_range[i]
+        predicted_value = solutions[-1]
+        sol = root(f,x0=predicted_value,args=(p))
+        if sol.success == True:
+            solutions = np.append(solutions,sol.x)
+            p_value = np.append(p_value,p)
+    v0 = np.array([p_value[1],solutions[1]])
+    v1 = np.array([p_value[2],solutions[2]])
+    return v0,v1
 
-CubicContStep(function,0,1)
-# %%
-
-def PsuedoArcLength(f,v0):
-v0 = np.array([0,1])
-v1 = np.array([2,3])
-a0,x0 = v0
-a1,x1 = v1
-secant = v1-v0
+v0,v1 = CubicContStep(function,0,-2,2)
 secant = v1-v0
 vstar = v1+secant
-def psuedo(f,vstar):
+# %%
+def PsuedoArcLength(f):
     p = vstar[0]
-    v = vstar[1]
-    vtrue = root(f,x0=v,args=(p))
-    vtrue = vtrue.x
-    v2 = np.array([vtrue,p])
-    return v2
+    x = vstar[1]
+    vtrue = root(f,x0=x,args=(p))
+    vtrue = float(vtrue.x)
+    return [vtrue,p]
 
-psuedo(function,vstar)
+v = PsuedoArcLength(function)
+x = v[1]
+print(x)
+def Conditions(v):
+    x = v[1]
+    c = v[0]
+    Condition1 = function(x,c)
+    Condition2 = np.dot((v-vstar),secant) 
+    return [Condition1,Condition2]
+solution = root(Conditions,x0=v)
+print(solution.x)
 #Need to define a function for cubic continuation that generates 1 step 
 # %%
 

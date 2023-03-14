@@ -9,13 +9,6 @@ from scipy.integrate import solve_ivp
 def function(x,c):
     return x**3 -x + c
 
-v = np.array(([0, 1],[1, 2]))
-a0,x0 = v[0]
-a1,x1 = v[1]
-secant = v[0]-v[1]
-v_predict = v[1]+secant
-v_true = root(function,x0=x1,args=(a1))
-print(v_true.x)
 # %%
 def HopfNormal(t,y,beta):
     sigma = -1
@@ -26,12 +19,41 @@ def HopfNormal(t,y,beta):
     return [du1_dt, du2_dt]
 
 # %%
-def CubicContStep(f,x0,p0,p1):
-    p_range = np.linspace(p0,p1,1)
+def CubicContStep(f,x0,p0):
+    p1 = p0 + 0.1
     solutions = np.array([x0])
-    p_value = np.array([p0])
+    p_values = np.array([p0,p1])
+    for i in range(1,len(p_values)):
+         p = p_values[i]
+         predicted_value = solutions[-1]
+         sol = root(f,x0=predicted_value,args=(p))
+    if sol.success == True:
+        solutions = np.append(solutions,sol.x)
+        p_value = np.append(p_value,p)
+    return p_values[1:],solutions[1:]
 
+CubicContStep(function,0,1)
+# %%
+
+def PsuedoArcLength(f,v0):
+v0 = np.array([0,1])
+v1 = np.array([2,3])
+a0,x0 = v0
+a1,x1 = v1
+secant = v1-v0
+secant = v1-v0
+vstar = v1+secant
+def psuedo(f,vstar):
+    p = vstar[0]
+    v = vstar[1]
+    vtrue = root(f,x0=v,args=(p))
+    vtrue = vtrue.x
+    v2 = np.array([vtrue,p])
+    return v2
+
+psuedo(function,vstar)
 #Need to define a function for cubic continuation that generates 1 step 
+# %%
 
 def CubicCont(f,x0,p0,p1):
     p_range = np.linspace(p0,p1,1000)
@@ -58,7 +80,7 @@ plt.show()
 def CubePsuedo(f,x0,p0,p1):
     p_range = np.linspace(p0,p1,1000)
     boop = root(f,x0=x0,)
-    v0 = 
+
 # %%
 """ def NumCont(ode,p0,p1,u0):
     p_range = np.linspace(p0,p1,100)

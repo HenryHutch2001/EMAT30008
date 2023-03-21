@@ -5,101 +5,63 @@ import matplotlib.pyplot as plt
 
 # %%
 
-def function(v):
-    x = v[1]
-    c = v[0]
-    return [x**3 -x + c,c]
+def function(x,c):
+    return x**3 -x + c
 
-a = np.array([[1,1],[2,2]])
-
-b = np.array([1,2])[np.newaxis]
-
-print(np.shape(a),np.shape(b))
-a = np.concatenate((a,b),axis = 0)
-print(a)
 #%%
 
-def CubicContStep(f,x0,p0,p1):
-    p_range = np.linspace(p0,p1,100) #Defining initial P values
-    solutions = np.array([x0]) #Creating array of all true solutions to the equation, including the initial guess
-    p_value = np.array([p0]) #Adding the first p value to the pvalues array
-    for i in range(0,len(p_range)-1): 
+
+def CubicCont(f,x0,p0,p1):
+    p_range = np.linspace(p0,p1,10000)
+    solutions = np.array([x0])
+    p_value = np.array([p0])
+    for i in range(0,len(p_range)-1):
         p = p_range[i]
         predicted_value = solutions[-1]
-        sol = root(f,x0=[p,predicted_value])
+        sol = root(f,x0=predicted_value,args=(p,))
         if sol.success == True:
-            solutions = np.append(solutions,sol.x[1])
+            solutions = np.append(solutions,sol.x)
             p_value = np.append(p_value,p)
-    v0 = [p_value[1],solutions[1]] #Basically generating 2 values for which we know to be true as initial guesses 
-    v1 = [p_value[2],solutions[2]]
+    v0 = np.array([p_value[1],solutions[1]]) #Basically generating 2 values for which we know to be true as initial guesses 
+    v1 = np.array([p_value[2],solutions[2]])
     return v0,v1
 
-v0,v1= CubicContStep(function,0,-2,2)
-v0 = np.array(v0)
-print(v0)
-
-# %%
-first = np.array([v0])
-
-first = np.append(first,v1)
-print(first)
-
-# %%
-def Conditions(v):
-        Condition1 = function(v)
-        Condition2 = np.dot((v-approx),secant)
-        return np.array([Condition1[1],Condition2])
 
 # %%
 
 def PsuedoLength(f,x0,p0,p1):
-    def Conditions(v):
-        Condition1 = function(v)
-        Condition2 = np.dot((v-approx),secant)
-        return np.array([Condition1[1],Condition2])
-    p_range = np.linspace(p0,p1,100)
-    first,second = CubicContStep(f,x0,p0,p1)
-    v0 = np.array([first])
-    v1 = np.array([second])
-    for i in range(0,len(p_range)-1):
-         secant = v1[i]-v0[i]
-         approx = v1[i]+secant
-         solution = root(Conditions,x0 = approx)
-         solution = solution.x
+    def conditions(input):
+        Condition1=function(input[0],input[1])
+        Condition2=np.dot(((input)-approx),secant)
+        return [Condition1,Condition2]
+    
+    first,second = CubicCont(f,x0,p0,p1)
+    solutions = np.array([first[1],second[1]])
+    p_value = np.array([first[0],second[0]])
+    v0 = first
+    v1 = second
+    secant = v1-v0
+    approx = v1+secant
+    p = p0
+    while p >=p0 and p<=p1:
+        secant = v1-v0
+        approx = v1+secant
+        sol = root(conditions,x0=approx,tol=1e-6)
+        print(sol.x)
+        v0 = v1
+        v1 = np.array([sol.x[0],sol.x[1]])
+        secant = v1-v0
+        approx = v1+secant
+        if sol.success == True:
+            solutions = np.append(solutions,sol.x[1])
+            p_value = np.append(p_value,sol.x[0])
+            p = sol.x[0]
+    return solutions,p_value
+
+x,y= PsuedoLength(function,-10,-2,2)
 
 
-    return p_range,v1
+plt.plot(-y,x)
+plt.show()
 
-PsuedoLength(function,0,-2,2)
-# %%
-approx = [-1.91919192,  0]
-secant = [0.04040404, 0]
 
-v0 = np.array([0,0])
-
-def Conditions(v):
-        Condition1 = function(v)
-        Condition2 = np.dot((v-approx),secant)
-        return np.array([Condition1[1],Condition2])
-
-solution = root(Conditions,x0=approx)
-
-solution = solution.x
-
-print(solution)
-print(v0)
-v0 = np.concatenate(([v0],[solution]),axis = 0)
-
-print(v0)
-# %%
-
-import numpy as np
-
-a = np.array([1, 2, 3])
-b = np.array([4, 5, 6])
-
-c = np.concatenate(([a], [b]), axis=0)
-
-print(c)
-
-# %%

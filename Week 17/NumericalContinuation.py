@@ -17,11 +17,6 @@ def HopfNormal(t,y,beta):
     du1_dt = beta*u1 - u2 + sigma*u1*((u1**2) + (u2**2))
     du2_dt = u1 + beta*u2 + sigma*u2*((u1**2) + (u2**2))
     return [du1_dt, du2_dt]
-# %%
-
-
-
-# %%
 
 
 
@@ -38,10 +33,11 @@ def CubicCont(f,x0,p0,p1):
         if sol.success == True:
             solutions = np.append(solutions,sol.x)
             p_value = np.append(p_value,p)
+    print(solutions)
     return solutions[1:],p_value[1:]
 
 x,y = CubicCont(function,1,-2,2)
-plt.plot(x,-y,'o')
+plt.plot(y,x,'o')
 plt.show() 
 
 #Develop CubicContinuation so that it returns only 2 values, v0 and v1
@@ -49,35 +45,58 @@ plt.show()
 #PYTEST
 # %%
 
-def CubePsuedo(f,x0,p0,p1):
-    p_range = np.linspace(p0,p1,1000)
-    boop = root(f,x0=x0,)
 
-# %%
-""" def NumCont(ode,p0,p1,u0):
-    p_range = np.linspace(p0,p1,100)
-    solutions = np.array([u0])
+def CubicContStep(f,x0,p0,p1):
+    p_range = np.linspace(p0,p1,10000)
+    solutions = np.array([x0])
+    p_value = np.array([p0])
     for i in range(0,len(p_range)-1):
         p = p_range[i]
-        x = solutions[i]
-        y0 = ode(x,p)
-        sol = solve_ivp(ode,[0,1],y0,args=(p,))
-        solutions = np.append(solutions,sol.y)
-    return p_range,solutions
+        predicted_value = solutions[-1]
+        sol = root(f,x0=predicted_value,args=(p,))
+        if sol.success == True:
+            solutions = np.append(solutions,sol.x)
+            p_value = np.append(p_value,p)
+    v0 = np.array([p_value[1],solutions[1]]) #Basically generating 2 values for which we know to be true as initial guesses 
+    v1 = np.array([p_value[2],solutions[2]])
+    return v0,v1
 
-x,y = NumCont(function,-2,2,1)
- """
+
 # %%
 
-""" p_range = np.linspace(0,2,100)
-#Vary the beta parameter between 0 and 2 
-x0 = [1,1]
-#Initial conditions for the ODE 
-t = 1
-solutions = np.array([x0])
+def PseudoLength(f,x0,p0,p1):
+    def conditions(input):
+        Condition1=function(input[0],input[1])
+        Condition2=np.dot(((input)-approx),secant)
+        return [Condition1,Condition2]
+    first,second = CubicContStep(f,x0,p0,p1)
+    solutions = np.array([first[1],second[1]])
+    p_value = np.array([first[0],second[0]])
+    v0 = first
+    v1 = second
+    secant = v1-v0
+    approx = v1+secant
+    p = p0
+    while p >=p0 and p<=p1:
+        secant = v1-v0
+        approx = v1+secant
+        sol = root(conditions,x0=approx,tol=1e-6)
+        print(sol.x)
+        v0 = v1
+        v1 = np.array([sol.x[0],sol.x[1]])
+        secant = v1-v0
+        approx = v1+secant
+        if sol.success == True:
+            solutions = np.append(solutions,sol.x[1])
+            p_value = np.append(p_value,sol.x[0])
+            p = sol.x[0]
+    return solutions,p_value
 
-for i in range(0,len(p_range)-1):
-    y0 = HopfNormal(t,x0,p_range[i])
-    sol = solve_ivp(HopfNormal,t_span=[0,1],y0=y0,args=(p_range[i],))
-    solutions = np.append(solutions,sol.y)
-print(len(solutions)) """
+x,y= PseudoLength(function,-10,-2,2)
+
+
+plt.plot(-y,x,'o')
+plt.show()
+
+
+

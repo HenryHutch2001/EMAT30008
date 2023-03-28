@@ -4,11 +4,18 @@ from scipy.optimize import root
 from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
 
-def HopfNormal(t,y,beta=4):
+def HopfNormal(t,y,beta):
     u1 = y[0]
     u2 = y[1]
     du1_dt = beta*u1 - u2 - u1*((u1**2) + (u2**2))+0.0001
     du2_dt = u1 + beta*u2 - u2*((u1**2) + (u2**2))
+    return [du1_dt, du2_dt]
+
+def modHopfNormal(t,y,beta):
+    u1 = y[0]
+    u2 = y[1]
+    du1_dt = beta*u1 - u2 + u1*(u1**2+u2**2)-u1*(u1**2+u2**2)**2
+    du2_dt = u1 + beta*u2+ u2*(u1**2+u2**2)-u2*(u1**2+u2**2)**2
     return [du1_dt, du2_dt]
 
 # %%
@@ -26,15 +33,16 @@ def ODENatural(ode,x0,t,p0,p1,Steps):
     predicted = [u1[0][-1],u2[0][-1]]#Creating an empty numpy array for which we store solutions in 
     for i in range(1,Steps):
         p = p_range[i] #Parameter value we solve at 
-        sol = solve_ivp(ode,t_span=[0,t],y0=predicted,t_eval=[t],args=(p,))
+        sol = solve_ivp(ode,t_span=[0,t],y0=predicted,t_eval=[0.1],args=(p,))
         u1 = np.append(u1,sol.y[0])
         u2 = np.append(u2,sol.y[1])
         predicted = [u1[-1],u2[-1]]
+        print(predicted)
     return p_range, u1,u2        
 
-p,u1,u2 = ODENatural(HopfNormal,[0,0],0.01,0,2,1000)
-plt.plot(p,u1,'o')
-plt.plot(p,u2,'o')
+p,u1,u2 = ODENatural(HopfNormal,[-1,1],0.1,-1,2,1000)
+plt.plot(p,u1)
+plt.plot(p,u2)
 plt.show()
 
 

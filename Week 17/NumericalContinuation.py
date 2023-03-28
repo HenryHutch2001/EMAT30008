@@ -8,20 +8,15 @@ from scipy.integrate import solve_ivp
 # %%
 def function(x,c):
     return x**3 -x+c
-
 # %%
-def HopfNormal(t,y,beta):
+def HopfNormal(y,t,beta):
     sigma = -1
     u1 = y[0]
     u2 = y[1]
     du1_dt = beta*u1 - u2 + sigma*u1*((u1**2) + (u2**2))
     du2_dt = u1 + beta*u2 + sigma*u2*((u1**2) + (u2**2))
     return [du1_dt, du2_dt]
-
-
-
 # %%
-
 def CubicCont(f,x0,p0,p1):
     p_range = np.linspace(p0,p1,1000)
     solutions = np.array([x0])
@@ -33,19 +28,12 @@ def CubicCont(f,x0,p0,p1):
         if sol.success == True:
             solutions = np.append(solutions,sol.x)
             p_value = np.append(p_value,p)
-    print(solutions)
     return solutions[1:],p_value[1:]
-
-x,y = CubicCont(function,1,-2,2)
-plt.plot(y,x,'o')
+x,y = CubicCont(function,-10,-2,2)
+plt.plot(-x,y,'o')
 plt.show() 
-
-#Develop CubicContinuation so that it returns only 2 values, v0 and v1
-
 #PYTEST
 # %%
-
-
 def CubicContStep(f,x0,p0,p1):
     p_range = np.linspace(p0,p1,10000)
     solutions = np.array([x0])
@@ -60,10 +48,7 @@ def CubicContStep(f,x0,p0,p1):
     v0 = np.array([p_value[1],solutions[1]]) #Basically generating 2 values for which we know to be true as initial guesses 
     v1 = np.array([p_value[2],solutions[2]])
     return v0,v1
-
-
 # %%
-
 def PseudoLength(f,x0,p0,p1):
     def conditions(input):
         Condition1=function(input[0],input[1])
@@ -91,12 +76,22 @@ def PseudoLength(f,x0,p0,p1):
             p_value = np.append(p_value,sol.x[0])
             p = sol.x[0]
     return solutions,p_value
-
 x,y= PseudoLength(function,-10,-2,2)
-
-
-plt.plot(-y,x,'o')
+plt.plot(x,y,'o')
 plt.show()
-
-
-
+# %%
+def ODEStep(ode,t,x0,p0,p1):
+    p_range = np.linspace(p0,p1,1000)
+    solutions = np.array([x0])
+    p_value = np.array([p0])
+    for i in range(0,len(p_range)-1):
+        p = p_range[i]
+        predicted_solution = solutions[-1]
+        print(solutions)
+        sol = root(ode,x0=predicted_solution,args=(t,p))
+        if sol.success == True:
+            solutions = np.append(solutions,sol.x)
+            p_value = np.append(p_value,p)
+        return solutions[1:],p_value[1:]
+x,y = ODEStep(HopfNormal,1,-10,-3,3)
+# %%

@@ -3,7 +3,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy
 
-
 gamma_1 = 1
 gamma_2 = 2
 a = 1 

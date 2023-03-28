@@ -6,6 +6,13 @@ def ode(t,y): #Keeping t in in case our ode requires it
     dx_dt = y[1]
     dy_dt = -y[0]
     return dx_dt, dy_dt
+
+def HopfNormal(y,t,beta=2):
+    u1 = y[0]
+    u2 = y[1]
+    du1_dt = beta*u1 - u2 - u1*((u1**2) + (u2**2))
+    du2_dt = u1 + beta*u2 - u2*((u1**2) + (u2**2))
+    return [du1_dt, du2_dt]
 # %%
 def ode1(t,y):
     a = 1
@@ -52,3 +59,6 @@ def solve_toRK(f,x0,t1,t2,h):
         Value = rk_step(f,x[i-1],t[i-1],h)
         x = np.vstack([x,Value])
    return t,x   
+
+t,x = solve_toEU(HopfNormal,[0,0],0,10,0.1)
+print(x)

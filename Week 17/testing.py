@@ -4,11 +4,11 @@ from scipy.optimize import root
 from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
 
-def HopfNormal(t,y,beta):
+def ode(t,y,beta):
     u1 = y[0]
     u2 = y[1]
-    du1_dt = beta*u1 - u2 - u1*((u1**2) + (u2**2))+0.0001
-    du2_dt = u1 + beta*u2 - u2*((u1**2) + (u2**2))
+    du1_dt = beta*u1 - u2 + u1*((u1**2) + (u2**2))
+    du2_dt = u1 + beta*u2 + u2*((u1**2) + (u2**2))
     return [du1_dt, du2_dt]
 
 def modHopfNormal(t,y,beta):
@@ -19,31 +19,46 @@ def modHopfNormal(t,y,beta):
     return [du1_dt, du2_dt]
 
 # %%
+def shooting(x0,ode):
+    """
+    A function that uses the numerical shooting method in order to find the limit cycles of an ode
 
+    SYNTAX
+    ------
+    The function is called the following way;
 
-def ODENatural(ode,x0,t,p0,p1,Steps):
-    p_range = np.linspace(p0,p1,Steps) #Returns a numpy array of length 100 containing the parameter values 
-    #we vary 
-    # We have x0, of the format [u1 u2], the initial guess for the solution with the initial parameter value
-    # We need to start from a known solution, so we can input this into scipys solver to find the initial solution
-    # using the guess as a starting point
-    x0 = solve_ivp(ode,t_span=[0,t],y0=x0,t_eval=[0],args=(p0,)) #Returns a numpy array containing the initial solution of x0
-    u1 = np.array([x0.y[0]]) 
-    u2 = np.array([x0.y[1]])
-    predicted = [u1[0][-1],u2[0][-1]]#Creating an empty numpy array for which we store solutions in 
-    for i in range(1,Steps):
-        p = p_range[i] #Parameter value we solve at 
-        sol = solve_ivp(ode,t_span=[0,t],y0=predicted,t_eval=[0.1],args=(p,))
-        u1 = np.append(u1,sol.y[0])
-        u2 = np.append(u2,sol.y[1])
-        predicted = [u1[-1],u2[-1]]
-        print(predicted)
-    return p_range, u1,u2        
+    shooting(x0,ode):
 
-p,u1,u2 = ODENatural(HopfNormal,[-1,1],0.1,-1,2,1000)
-plt.plot(p,u1)
-plt.plot(p,u2)
-plt.show()
+        x0: the x0 input is a list containing an initial guess of the initial values of the limit cycle for the specified ode, the form of
+        this input should be as follows;
+
+            x0 = [x0,y0,T]
+
+        ode: the ode input is the ordinary differential equation for which we want to find the limit cycle of, the form of the ode
+        input should be as follows;
+
+            def PredPrey(t,x0): Defining the ode as a function with inputs t and x0, time and initial conditions
+            a = 1     |
+            b = 0.1   |  Defining any parameters inside the function handle, you could leave them out of the function but you
+            d = 0.1   |  would have to define them as arguments when calling the function
+            x = x0[0] Splitting the initial conditions array into its constituent parts
+            y = x0[1]
+            dx_dt = x*(1-x) - (a*x*y)/(d+x) #Defining the differential equations
+            dy_dt = b*y*(1-(y/x))
+            return [dx_dt, dy_dt] #Returns the value of the ode as an array 
+    
+    OUTPUT
+    ------
+        The shooting function returns the correct initial values of the limit cycle
+    """
+    def cons(x0,ode): #Finds the points and time period of the limit cycle
+        condition_1 = x0[:2]- scipy.integrate.solve_ivp(ode,[0, x0[2]],x0[:2], rtol = 1e-4).y[:,-1]
+        condition_2 = ode(0,x0[:2])[0] 
+        return [*condition_1,condition_2]
+    result = scipy.optimize.root(cons, x0 = x0, args=(ode,))
+    print(result.x)
+    return(result.x)
+
 
 
 # %%

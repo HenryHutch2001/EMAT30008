@@ -9,13 +9,6 @@ from scipy.integrate import solve_ivp
 def function(x,c):
     return x**3 -x+c
 # %%
-def HopfNormal(y,t,beta):
-    sigma = -1
-    u1 = y[0]
-    u2 = y[1]
-    du1_dt = beta*u1 - u2 + sigma*u1*((u1**2) + (u2**2))
-    du2_dt = u1 + beta*u2 + sigma*u2*((u1**2) + (u2**2))
-    return [du1_dt, du2_dt]
 # %%
 def CubicCont(f,x0,p0,p1):
     p_range = np.linspace(p0,p1,1000)

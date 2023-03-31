@@ -5,9 +5,9 @@ import matplotlib.pyplot as plt
 def ode(t,y): #Keeping t in in case our ode requires it
     dx_dt = y[1]
     dy_dt = -y[0]
-    return dx_dt, dy_dt
+    return [dx_dt, dy_dt]
 
-def HopfNormal(y,t,beta=2):
+def HopfNormal(t,y,beta=2):
     u1 = y[0]
     u2 = y[1]
     du1_dt = beta*u1 - u2 - u1*((u1**2) + (u2**2))
@@ -20,7 +20,7 @@ def ode1(t,y):
     d = 0.1 #Keeping t in in case our ode requires it
     dx_dt = y[0]*(1-y[0]) - (a*y[0]*y[1])/(d+y[0]) #Defining the differential equation
     dy_dt = b*y[1]*(1-(y[1]/y[0]))
-    return dx_dt, dy_dt #Returns the value of the ODE
+    return [dx_dt, dy_dt] #Returns the value of the ODE
 # %%
 def euler_step(f,xn,t,h):
     f = np.array(f(t,xn))
@@ -58,7 +58,11 @@ def solve_toRK(f,x0,t1,t2,h):
    for i in range(1,len(t)):
         Value = rk_step(f,x[i-1],t[i-1],h)
         x = np.vstack([x,Value])
-   return t,x   
+   return t,x  
 
-t,x = solve_toEU(HopfNormal,[0,0],0,10,0.1)
-print(x)
+t,x,y = solve_toEU(ode,[0,0],0,10,0.5)
+print(x,y)
+plt.plot(t,x)
+plt.plot(t,y,'o')
+plt.show()
+# %%

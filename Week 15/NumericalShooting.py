@@ -1,44 +1,51 @@
 # %%
 import scipy
-from scipy.optimize import root 
+from scipy.optimize import root
+from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
 import numpy as np
 from math import nan
-from scipy.signal import find_peaks
+from My_Functions import solve_toEU,solve_to,shooting
+# %%
 a = 1
 b = 0.1
 d = 0.1
-# %%
 def ode(t,y,a,b,d): #Keeping t in in case our ode requires it
-    dx_dt = y[0]*(1-y[0]) - (a*y[0]*y[1])/(d+y[0]) #Defining the differential equation
-    dy_dt = b*y[1]*(1-(y[1]/y[0]))
+    x = y[0]
+    y = y[1]
+    dx_dt = x*(1-x) - (a*x*y)/(d+x) #Defining the differential equation
+    dy_dt = b*y*(1-(y/x))
     return [dx_dt, dy_dt] #Returns the value of the ODE
+
+
+result = solve_ivp(ode,[0,10],[3,3],args=(1,0.1,0.1)).y
 # Solving the ode
 t_eval = np.linspace(0,100,1000) #defines the timeframe for which we simulate the ode between
-Solution = scipy.integrate.solve_ivp(ode,[0, 100],[0.5,0.5],t_eval=t_eval,args=[1,0.1,0.1],rtol = 1e-4)
+t,x = solve_toEU(ode,[0.5,0.5],0,100,0.01,1,0.1,0.1)
+
+#%%
 #Uses the solve_ivp function to solve the ODE with the first argument being the function for which we solve
 #The second being the time for which we solve between, the third being the initial conditions...
 # %%
-#Isolating a periodic orbit:
-#For x:
-# %%
-#Plotting ODE
-plt.plot(Solution.t,Solution.y[0,:], label = 'X') #Plotting X value by extracting the first column in the solution
-plt.plot(Solution.t,Solution.y[1,:], label = 'y') #Plotting Y value by extracting the second column in the solution
-plt.legend()
-plt.show()
+
 # %%
 #Plotting the phase portrait
-plt.plot(Solution.y[0,:],Solution.y[1,:]) #Plots the phase portrait, the value of X against Y
+plt.plot(x[:,0],x[:,1]) #Plots the phase portrait, the value of X against Y
 plt.show()
 #We can see that the ODE eventually converges to a limit cycle where the values keep following the same cycle 
 # %%
-def shooting(x): #Finds the points and time period of the limit cycle
-    condition_1 = x[:2]- scipy.integrate.solve_ivp(ode,[0, x[2]],x[:2],args=[a,b,d], rtol = 1e-4).y[:,-1]
-    condition_2 = ode(0,x[:2],a,b,d)[0]
-    return [*condition_1,condition_2] # THe * gets rid of the list within
-initial_guess = [0.8, 0.2,30]
-result = scipy.optimize.root(shooting, x0 = initial_guess)
-print(result.x)
+x = [30,0.8,0.2]
+a = 1
+b = 0.1
+d = 0.1
 
-# %%
+y = shooting(x,ode,a,b,d)
+print(y)
+
+""" def shooting1(x,ode,*args):
+    Condition1 = x[1:len(x)]-solve_ivp(ode,[0,x[0]],x[1:len(x)],args=([*args])).y[:,-1]
+    Condition2 = ode(0,x[1:len(x)],*args)[0]
+    return [*Condition1,Condition2]
+Result = root(shooting1,x0 = x,args=(ode,a,b,d))
+print(Result.x) """
+

@@ -23,7 +23,7 @@ def CubicCont(f,x0,p0,p1):
             p_value = np.append(p_value,p)
     return solutions[1:],p_value[1:]
 x,y = CubicCont(function,-10,-2,2)
-plt.plot(-x,y,'o')
+plt.plot(y,x,'o')
 plt.show() 
 #PYTEST
 # %%
@@ -70,7 +70,7 @@ def PseudoLength(f,x0,p0,p1):
             p = sol.x[0]
     return solutions,p_value
 x,y= PseudoLength(function,-10,-2,2)
-plt.plot(x,y,'o')
+plt.plot(y,x,'o')
 plt.show()
 # %%
 def ODEStep(ode,t,x0,p0,p1):

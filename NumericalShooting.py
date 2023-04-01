@@ -42,10 +42,3 @@ d = 0.1
 y = shooting(x,ode,a,b,d)
 print(y)
 
-""" def shooting1(x,ode,*args):
-    Condition1 = x[1:len(x)]-solve_ivp(ode,[0,x[0]],x[1:len(x)],args=([*args])).y[:,-1]
-    Condition2 = ode(0,x[1:len(x)],*args)[0]
-    return [*Condition1,Condition2]
-Result = root(shooting1,x0 = x,args=(ode,a,b,d))
-print(Result.x) """
-

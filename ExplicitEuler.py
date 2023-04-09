@@ -26,7 +26,6 @@ dt = (C*dx**2)/D # Rearranging the equation for C gives the equation for the tim
 t_final = 1 # Final time in the simulation 
 N_t = ceil(t_final/dt) # Determine the number of timesteps 
 t = dt * np.arange(N_t) # Determine the time point
-print(x_int)
 # %%
 u = np.zeros((N_t+1,N-1))
 u[0,:] = f(x_int,a,b)
@@ -41,30 +40,19 @@ for n in range(0,N_t):
             u[n+1,N-2] = u[n, N-2] + C * (beta - 2 * u[n, N-2] + u[n, N-3])
 # %%
 
-plt.plot(x_int,u[1,:])
-plt.show()
-
-# %%
-# Define the x and t values for the plot
 x = np.linspace(a,b,1000)
-t = 1
+t = 0
 
 # Calculate the true solution at each (x,t) pair
 def true_solution(x, t):
     return np.exp(-(D*math.pi**2*t)/(b-a)**2) * np.sin((math.pi*(x-a))/(b-a))
 
 u_true = true_solution(x, t)
-
-# Plot the true solution
-plt.plot(x, u_true, label='True solution')
-
-# Add labels and legend to the plot
-plt.xlabel('x')
-plt.ylabel('u(x,t)')
-plt.title('True solution at t = 1')
-plt.legend()
-
-# Show the plot
+plt.plot(x, u_true)
+plt.plot(x_int,u[1,:],'o')
 plt.show()
+
+# %%
+
 
 # %%

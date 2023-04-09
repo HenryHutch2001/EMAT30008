@@ -72,7 +72,7 @@ RK4Error =[]
 for step in h:
     "For the number of steps in the array of different step sizes..."
     t, x = solve_toEU(x0, t1, t2, step)
-    t, x1 = solve_toRK(x0, t1, t2, step )
+    t, x1 = solve_toRK(x0, t1, t2, step)
     "return the x value and t value, aka the approximation for the function at each specific time step"
     y_exact = exact_solution(1)
     "Return the actual values of the function for each "

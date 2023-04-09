@@ -91,10 +91,13 @@ def solve_toEU(f,x0,t1,t2,h,*args):
     The solve_toEU function returns a 2 values as a tuple. It returns the approximated values of the independent variables within the timespan
     and the values for the time at which they were approximated. 
    """
-   deltat_max = 1
-   if h >= deltat_max:
-    print("Step size too large for accurate approximation")
-    exit(solve_toEU)
+   if t1 <0:
+    raise ValueError('Time must be a positive integer')
+   if t2 < t1:
+    raise ValueError("This function iterates forwards in time, please provide a correct time interval")
+   deltat_max = 0.1
+   if h > deltat_max:
+    raise ValueError("Step size too large for accurate approximation")
    t = np.arange(t1,t2+h,h)
    x = np.array([x0])
    for i in range(1,len(t)):
@@ -191,10 +194,13 @@ def solve_toRK(f,x0,t1,t2,h,*args):
     The solve_toRK function returns a 2 values as a tuple. It returns the approximated values of the independent variables within the timespan
     and the values for the time at which they were approximated. 
    """
-   deltat_max = 1
-   if h >= deltat_max:
-    print("Step size too large for accurate approximation")
-    exit(solve_toRK)
+   if t1 <0:
+    raise ValueError('Time must be a positive integer')
+   if t2 < t1:
+    raise ValueError("This function iterates forwards in time, please provide a correct time interval")
+   deltat_max = 0.25
+   if h > deltat_max:
+    raise ValueError("Step size too large for accurate approximation")
    t = np.arange(t1,t2+h,h)
    x = np.array([x0])
    for i in range(1,len(t)):
@@ -202,7 +208,7 @@ def solve_toRK(f,x0,t1,t2,h,*args):
         x = np.vstack([x,Value])
    return t,x   
 # %%
-def solve_to(f,x0,t1,t2,h,*args):
+def solve_to(f,x0,t1,t2,h,solver,*args):
     """
    A function that uses methods of approximation to estimate the values of an ODE between a given timespan
 
@@ -250,15 +256,14 @@ def solve_to(f,x0,t1,t2,h,*args):
     if h >= deltat_max:
         print("Step size too large for accurate approximation")
         exit(solve_to)
-    method = input("Which approximation method would you like to use? Please enter either Euler or Runge-Kutta ").lower()
-    if method == ("Euler").lower():
+    if solver == ("Euler","eu").lower():
         t,x = solve_toEU(f,x0,t1,t2,h,*args)
         return t,x
-    elif method == ("Runge-Kutta").lower():
+    elif solver == ("Runge-Kutta","rk","RK4").lower():
         t,x = solve_toRK(f,x0,t1,t2,h,*args)
         return t,x
     else:
-        print("Please provide a correct input")
+        print("Please provide a documented numerical approximation technique")
         exit(solve_to)
 # %%
 def shooting(x,ode,*args):
@@ -298,5 +303,7 @@ def shooting(x,ode,*args):
         Condition2 = ode(0,x[1:len(x)],*args)[0]
         return [*Condition1,Condition2]
     Result = root(shooting1,x0 = x,args=(ode,*args))
+    if Result.success == False:
+       raise ValueError('Periodic Orbit does not exist')
     return(Result.x)
 

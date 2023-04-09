@@ -2,7 +2,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-def ode(t,y): #Keeping t in in case our ode requires it
+def ode(t,y): 
     dx_dt = y[1]
     dy_dt = -y[0]
     return [dx_dt, dy_dt]
@@ -17,10 +17,10 @@ def HopfNormal(t,y,beta=2):
 def ode1(t,y):
     a = 1
     b = 0.1
-    d = 0.1 #Keeping t in in case our ode requires it
-    dx_dt = y[0]*(1-y[0]) - (a*y[0]*y[1])/(d+y[0]) #Defining the differential equation
+    d = 0.1 
+    dx_dt = y[0]*(1-y[0]) - (a*y[0]*y[1])/(d+y[0]) 
     dy_dt = b*y[1]*(1-(y[1]/y[0]))
-    return [dx_dt, dy_dt] #Returns the value of the ODE
+    return [dx_dt, dy_dt] 
 # %%
 def euler_step(f,xn,t,h):
     f = np.array(f(t,xn))

@@ -15,9 +15,6 @@ GridSpace = np.linspace(a,b,N)
 bc_left = 0
 bc_right = 0
 
-def IC(x):
-    return np.sin(np.pi*((x-a)/b-a))
-
 def CreateAandb(N,a,b, bc_left, bc_right):
     A = np.zeros((N,N))
     dx = (b-a)/N
@@ -36,12 +33,23 @@ A_dd,b_dd,dx = CreateAandb(N,a,b,bc_left,bc_right)
 def IC(x):
     return np.sin((np.pi*(x-a))/(b-a))
 
-def system(t,u,q=1):
-    du_dt = (D/(dx**2))*(A_dd*u+b_dd)
+def system(t,u):
+    du_dt = (D/(dx**2))*(A_dd*u+b_dd+(dx**2))
     return du_dt
 
-x0 = IC(GridSpace)
+def q_func(x, t, u):
+    q = np.zeros_like(x) # initialize q as an array of zeros
+    for i in range(len(x)):
+        q[i] = x[i]**2 * t # modify q as a function of x, t, and u
+    return q
 
+def systemsource(t,u,q):
+    q = q_func(GridSpace, t, u)
+    du_dt = (D/(dx**2))*(A_dd*u+b_dd+(dx**2)*q)
+    return du_dt
+
+
+x0 = IC(GridSpace)
 x = np.linspace(a,b,1000)
 t = 0
 def true_solution(x, t):
@@ -50,11 +58,18 @@ def true_solution(x, t):
 u_true = true_solution(x, t)
 
 # Plot the true solution
-plt.plot(x, u_true, label='True solution')
+plt.plot(x, u_true, label='True solution') 
 
 t,x = solve_toRK(system,IC(GridSpace),0,10,0.1)
 # extract the solution values for each time step
 plt.plot(GridSpace,x[0,:],'o')
+plt.xlabel('x')
+plt.ylabel('u(x)')
+plt.show()
+
+t1,x1 = solve_toRK(systemsource,IC(GridSpace),0,10,0.1,q_func)
+
+plt.plot(GridSpace,x1[0,:])
 plt.show()
 
 

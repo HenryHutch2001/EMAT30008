@@ -32,6 +32,7 @@ def FiniteSolverNoSource(u,N,dx,alpha,beta):
     F[N-2] = ((beta-2*u[N-2]+u[N-3])/(dx**2))
     return F
 
+
 def True1(GridSpace,a,b,alpha,beta):
     return (((beta-alpha)/(b-a))*(GridSpace-a))+alpha
 x = True1(GridSpace,a,b,alpha,beta)

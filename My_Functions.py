@@ -252,14 +252,10 @@ def solve_to(f,x0,t1,t2,h,solver,*args):
     The solve_to function returns a 2 values as a tuple. It returns the approximated values of the independent variables within the timespan
     and the values for the time at which they were approximated. 
    """
-    deltat_max = 1
-    if h >= deltat_max:
-        print("Step size too large for accurate approximation")
-        exit(solve_to)
-    if solver == ("Euler","eu").lower():
+    if str(solver) == ("Euler"):
         t,x = solve_toEU(f,x0,t1,t2,h,*args)
         return t,x
-    elif solver == ("Runge-Kutta","rk","RK4").lower():
+    elif str(solver) == ("Runge-Kutta"):
         t,x = solve_toRK(f,x0,t1,t2,h,*args)
         return t,x
     else:
@@ -307,3 +303,57 @@ def shooting(x,ode,*args):
        raise ValueError('Periodic Orbit does not exist')
     return(Result.x)
 
+def NumCont(f,x0,p0,p1):
+    p_range = np.linspace(p0,p1,1000)
+    solutions = np.array([x0])
+    p_value = np.array([p0])
+    for i in range(0,len(p_range)-1):
+        p = p_range[i]
+        predicted_value = solutions[-1]
+        sol = root(f,x0=predicted_value,args=(p))
+        if sol.success == True:
+            solutions = np.append(solutions,sol.x)
+            p_value = np.append(p_value,p)
+    return p_value[1:],solutions[1:]
+
+def CubicContStep(f,x0,p0,p1):
+    p_range = np.linspace(p0,p1,10000)
+    solutions = np.array([x0])
+    p_value = np.array([p0])
+    for i in range(0,len(p_range)-1):
+        p = p_range[i]
+        predicted_value = solutions[-1]
+        sol = root(f,x0=predicted_value,args=(p,))
+        if sol.success == True:
+            solutions = np.append(solutions,sol.x)
+            p_value = np.append(p_value,p)
+    v0 = np.array([p_value[1],solutions[1]]) 
+    v1 = np.array([p_value[2],solutions[2]])
+    return v0,v1
+
+def PseudoCont(f,x0,p0,p1):
+    def conditions(input):
+        Condition1=f(input[0],input[1])
+        Condition2=np.dot(((input)-approx),secant)
+        return [Condition1,Condition2]
+    first,second = CubicContStep(f,x0,p0,p1)
+    solutions = np.array([first[1],second[1]])
+    p_value = np.array([first[0],second[0]])
+    v0 = first
+    v1 = second
+    secant = v1-v0
+    approx = v1+secant
+    p = p0
+    while p >=p0 and p<=p1:
+        secant = v1-v0
+        approx = v1+secant
+        sol = root(conditions,x0=approx,tol=1e-6)
+        v0 = v1
+        v1 = np.array([sol.x[0],sol.x[1]])
+        secant = v1-v0
+        approx = v1+secant
+        if sol.success == True:
+            solutions = np.append(solutions,sol.x[1])
+            p_value = np.append(p_value,sol.x[0])
+            p = sol.x[0]
+    return p_value, solutions

@@ -24,11 +24,17 @@ def test_EU():
     with pytest.raises(ValueError):
         solve_toEU(ode,[1,1],0,1,0.5)
     with pytest.raises(ValueError):
-        solve_toEU(ode,[1,1],1,0,0.5)
+        solve_toEU(ode,[1,1],1,0,0.1)
 
 def test_output_typeRK():
     output = solve_toRK(ode,[1,1],0,1,0.1)
     assert isinstance(output, tuple)
+    with pytest.raises(ValueError):
+        solve_toRK(ode,[1,1],-1,1,0.1)
+    with pytest.raises(ValueError):
+        solve_toRK(ode,[1,1],0,1,0.5)
+    with pytest.raises(ValueError):
+        solve_toRK(ode,[1,1],1,0,0.1)
   
 
 

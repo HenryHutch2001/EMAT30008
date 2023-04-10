@@ -91,6 +91,8 @@ def solve_toEU(f,x0,t1,t2,h,*args):
     The solve_toEU function returns a 2 values as a tuple. It returns the approximated values of the independent variables within the timespan
     and the values for the time at which they were approximated. 
    """
+   if not isinstance(x0, list):
+    raise TypeError("Input must be a list")
    if t1 <0:
     raise ValueError('Time must be a positive integer')
    if t2 < t1:

@@ -3,6 +3,59 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import root
 import math
+def FiniteDifferenceRobin(source,D,N,alpha,betagamma,*args):
+    a = 0 
+    b = 1
+    GridSpace = np.linspace(a,b,N)
+    Initial = 0.1 * GridSpace
+    dx = (b-a)/N
+    def SolveSource(u):
+        F = np.zeros(N)
+        F[0] = D*((u[1]-2*u[0]+alpha)/(dx**2))+source(GridSpace[0],F[0],*args)
+        for i in range(1,N-1):
+            F[i] = D*()       
+def FiniteDifferenceNeumann(source,D,N,alpha,beta,*args):
+    a = 0
+    b = 1
+    GridSpace = np.linspace(a,b,N)
+    Initial = 0.1 * GridSpace
+    dx = (b-a)/N
+    def SolveSource(u):
+        F = np.zeros(N)
+        F[0] = D*((u[1]-2*u[0]+alpha)/(dx**2))+source(GridSpace[0],F[0],*args)
+        for i in range(1,N-1):
+            F[i] = D*((u[i+1]-2*u[i]+u[i-1])/(dx**2))+source(GridSpace[i],F[i],*args)
+        F[N-1] = D*((-2*(u[N-1])+2*u[N-2])/(dx**2)+((2*beta)/dx) +source(GridSpace[N-1],F[N-1],*args))
+        return F
+    Solution = root(SolveSource,x0 = Initial)
+    return GridSpace,Solution.x
+
+
+
+def FiniteDifferenceDirichlet(source,D,N,alpha,beta,*args): #Perfect
+    a = 0
+    b = 1
+    GridSpace = np.linspace(a,b,N+1)
+    dx = (b-a)/N 
+    Interior = GridSpace[1:-1]
+    Guess = Interior * 0.1
+    def SolveSource(u):
+        F = np.zeros(N-1)
+        F[0] = D*((u[1]-2*u[0]+alpha)/(dx**2))+source(Interior[0],F[0],*args)
+        for i in range(1,N-2):
+            F[i] = D*((u[i+1]-2*u[i]+u[i-1])/(dx**2))+source(Interior[i],F[i],*args)
+        F[N-2] = D*((beta-2*u[N-2]+u[N-3])/(dx**2))+source(Interior[N-2],F[N-2],*args)
+        return F
+    Solution = root(SolveSource,x0 = Guess) 
+    return Interior,Solution.x
+
+def source(x,f,beta):
+    return x*4 + beta
+
+x,y = FiniteDifferenceDirichlet(source,1,20,0.0,1.0,1)
+plt.plot(x,y)
+plt.show()
+
 
 # %%
 def PDE(x):

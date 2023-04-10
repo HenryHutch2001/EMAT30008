@@ -81,7 +81,6 @@ for step in h:
     "Return the error between our approximation and the value of the actual function for each timestep"
 ax.loglog(h, EulerError, 'b-',label = 'Eulers method')
 ax.loglog(h, RK4Error, 'r-', label = 'Runge-Kutta method')
-ax.invert_xaxis()
 plt.grid()
 ax.set_xlabel("Step Size (h)")
 ax.set_ylabel("Error")

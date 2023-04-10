@@ -10,7 +10,7 @@ def function(x,c):
     return x**3 -x+c
 # %%
 # %%
-def CubicCont(f,x0,p0,p1):
+def NumCont(f,x0,p0,p1):
     p_range = np.linspace(p0,p1,1000)
     solutions = np.array([x0])
     p_value = np.array([p0])
@@ -21,9 +21,9 @@ def CubicCont(f,x0,p0,p1):
         if sol.success == True:
             solutions = np.append(solutions,sol.x)
             p_value = np.append(p_value,p)
-    return solutions[1:],p_value[1:]
-x,y = CubicCont(function,-10,-2,2)
-plt.plot(y,x,'o')
+    return p_value[1:],solutions[1:]
+x,y = NumCont(function,-10,-2,2)
+plt.plot(x,y,'o')
 plt.show() 
 #PYTEST
 # %%
@@ -68,7 +68,7 @@ def PseudoLength(f,x0,p0,p1):
             solutions = np.append(solutions,sol.x[1])
             p_value = np.append(p_value,sol.x[0])
             p = sol.x[0]
-    return solutions,p_value
+    return p_value, solutions
 x,y= PseudoLength(function,-10,-2,2)
 plt.plot(y,x,'o')
 plt.show()

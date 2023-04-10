@@ -1,5 +1,5 @@
 # %%
-from My_Functions import shooting,solve_to
+from My_Functions import shooting,solve_to, solve_toRK
 import numpy as np
 from scipy.integrate import solve_ivp
 from scipy.optimize import root
@@ -58,4 +58,21 @@ def NaturalParamODE(ode,x0,p0,p1):
 
 x,p = NaturalParamODE(HopfNormalPolar,[30,0,1],0,2)
 print(x)
+# %%
+def Lorenz(t,xyz,s,r,b):
+    x,y,z = xyz
+    dx_dt = s*(y-x)
+    dy_dt = r*x - y - x*z
+    dz_dt = x*y - b*z
+    return [dx_dt,dy_dt,dz_dt]
+
+t,x= solve_toRK(Lorenz,[0,1,1.05],0,10,0.01,3,26.5,1)
+fig = plt.figure()
+ax = fig.gca(projection='3d')
+
+ax.plot(x[:,0], x[:,1], x[:,2])
+ax.set_xlabel("X")
+ax.set_ylabel("Y")
+ax.set_zlabel("Z")
+plt.show()
 # %%

@@ -10,7 +10,7 @@ def euler_step(f,xn,t,h,*args):
     """
     A function that uses the euler approximation method to find a single step of the solution
 
-    SYNTAX
+    SYNTAXfe
     ------
     The function is called in the following way:
 
@@ -91,8 +91,6 @@ def solve_toEU(f,x0,t1,t2,h,*args):
     The solve_toEU function returns a 2 values as a tuple. It returns the approximated values of the independent variables within the timespan
     and the values for the time at which they were approximated. 
    """
-   if not isinstance(x0, list):
-    raise TypeError("Input must be a list")
    if t1 <0:
     raise ValueError('Time must be a positive integer')
    if t2 < t1:
@@ -305,6 +303,7 @@ def shooting(x,ode,*args):
        raise ValueError('Periodic Orbit does not exist')
     return(Result.x)
 
+# %%
 def NumCont(f,x0,p0,p1):
     p_range = np.linspace(p0,p1,1000)
     solutions = np.array([x0])
@@ -359,3 +358,77 @@ def PseudoCont(f,x0,p0,p1):
             p_value = np.append(p_value,sol.x[0])
             p = sol.x[0]
     return p_value, solutions
+
+# %%
+def FiniteDifferenceRobin(source,D,N,alpha,betagamma,*args):
+    a = 0 
+    b = 1
+    GridSpace = np.linspace(a,b,N+1)
+    Interior = GridSpace[1:]
+    dx = (b-a)/N
+    Guess = Interior * 0.5
+    beta,gamma = betagamma
+    def SolveSource(u):
+        F = np.zeros(N)
+        F[0] = D*((u[1]-2*u[0]+alpha)/(dx**2))+source(Interior[0],F[0],*args) #First internal gridpoint
+        for i in range(1,N-1):
+            F[i] = F[i] = D*((u[i+1]-2*u[i]+u[i-1])/(dx**2))+source(Interior[i],F[i],*args)
+        F[N-1] = D*(((-2*(1+gamma*dx)*u[N-1])+(2*u[N-2]))/(dx**2) + (2*beta)/dx + source(Interior[N-1],F[N-1],*args))
+        return F
+    Solution = root(SolveSource, x0=Guess)
+    return Interior, Solution.x
+def FiniteDifferenceNeumann(source,D,N,alpha,beta,*args): 
+    a = 0
+    b = 1
+    GridSpace = np.linspace(a,b,N+1)
+    Interior = GridSpace[1:]
+    Guess = Interior*0.5
+    dx = (b-a)/N
+    def SolveSource(u):
+        F = np.zeros(N)
+        F[0] = D*((u[1]-2*u[0]+alpha)/(dx**2))+source(Interior[0],F[0],*args) #First internal gridpoint
+        for i in range(1,N-1): 
+            F[i] = D*((u[i+1]-2*u[i]+u[i-1])/(dx**2))+source(Interior[i],F[i],*args)
+        F[N-1] = D*((-2*(u[N-1])+2*u[N-2])/(dx**2)+((2*beta)/dx) +source(Interior[N-1],F[N-1],*args))
+        return F
+    Solution = root(SolveSource,x0 = Guess)
+    return Interior,Solution.x
+def FiniteDifferenceDirichlet(source,D,N,alpha,beta,*args): 
+    a = 0
+    b = 1
+    GridSpace = np.linspace(a,b,N+1)
+    dx = (b-a)/N 
+    Interior = GridSpace[1:-1]
+    Guess = Interior * 0.5
+    def SolveSource(u):
+        F = np.zeros(N-1)
+        F[0] = D*((u[1]-2*u[0]+alpha)/(dx**2))+source(Interior[0],F[0],*args)
+        for i in range(1,N-2):
+            F[i] = D*((u[i+1]-2*u[i]+u[i-1])/(dx**2))+source(Interior[i],F[i],*args)
+        F[N-2] = D*((beta-2*u[N-2]+u[N-3])/(dx**2))+source(Interior[N-2],F[N-2],*args)
+        return F
+    Solution = root(SolveSource,x0 = Guess) 
+    return Interior,Solution.x
+
+def FiniteDifference(source,D,N,bc_type,alpha,beta,*args):
+    if bc_type == 'dirichlet':
+        if not isinstance(alpha,float):
+            raise ValueError("'alpha' must be a floating point number")
+        if not isinstance(beta,float):
+            raise ValueError("'beta' must be a floating point number")
+        Interior, Solution = FiniteDifferenceDirichlet(source,D,N,alpha,beta,*args)
+    elif bc_type == 'neumann':
+        if not isinstance(alpha,float):
+            raise ValueError("'alpha' must be a floating point number")
+        if not isinstance(beta,float):
+            raise ValueError("'beta' must be a floating point number")
+        Interior,Solution = FiniteDifferenceNeumann(source,D,N,alpha,beta,*args)
+    elif bc_type == 'robin':
+        if not isinstance(alpha,float):
+            raise ValueError("'alpha' must be a floating point number")
+        if not isinstance(beta,list):
+            raise ValueError("'beta' must be a list")
+        Interior,Solution = FiniteDifferenceRobin(source,D,N,alpha,beta,*args)
+    else:
+        raise ValueError("Boundary condition type is invalid, please input 'dirichlet','neumann' or 'robin'")
+    return Interior,Solution

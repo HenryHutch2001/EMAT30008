@@ -6,39 +6,43 @@ import math
 def FiniteDifferenceRobin(source,D,N,alpha,betagamma,*args):
     a = 0 
     b = 1
-    GridSpace = np.linspace(a,b,N)
-    Initial = 0.1 * GridSpace
+    GridSpace = np.linspace(a,b,N+1)
+    Interior = GridSpace[1:]
     dx = (b-a)/N
+    Guess = Interior * 0.5
+    beta,gamma = betagamma
     def SolveSource(u):
         F = np.zeros(N)
-        F[0] = D*((u[1]-2*u[0]+alpha)/(dx**2))+source(GridSpace[0],F[0],*args)
+        F[0] = D*((u[1]-2*u[0]+alpha)/(dx**2))+source(Interior[0],F[0],*args) #First internal gridpoint
         for i in range(1,N-1):
-            F[i] = D*()       
-def FiniteDifferenceNeumann(source,D,N,alpha,beta,*args):
+            F[i] = F[i] = D*((u[i+1]-2*u[i]+u[i-1])/(dx**2))+source(Interior[i],F[i],*args)
+        F[N-1] = D*(((-2*(1+gamma*dx)*u[N-1])+(2*u[N-2]))/(dx**2) + (2*beta)/dx + source(Interior[N-1],F[N-1],*args))
+        return F
+    Solution = root(SolveSource, x0=Guess)
+    return Interior, Solution.x
+def FiniteDifferenceNeumann(source,D,N,alpha,beta,*args): 
     a = 0
     b = 1
-    GridSpace = np.linspace(a,b,N)
-    Initial = 0.1 * GridSpace
+    GridSpace = np.linspace(a,b,N+1)
+    Interior = GridSpace[1:]
+    Guess = Interior*0.5
     dx = (b-a)/N
     def SolveSource(u):
         F = np.zeros(N)
-        F[0] = D*((u[1]-2*u[0]+alpha)/(dx**2))+source(GridSpace[0],F[0],*args)
-        for i in range(1,N-1):
-            F[i] = D*((u[i+1]-2*u[i]+u[i-1])/(dx**2))+source(GridSpace[i],F[i],*args)
-        F[N-1] = D*((-2*(u[N-1])+2*u[N-2])/(dx**2)+((2*beta)/dx) +source(GridSpace[N-1],F[N-1],*args))
+        F[0] = D*((u[1]-2*u[0]+alpha)/(dx**2))+source(Interior[0],F[0],*args) #First internal gridpoint
+        for i in range(1,N-1): 
+            F[i] = D*((u[i+1]-2*u[i]+u[i-1])/(dx**2))+source(Interior[i],F[i],*args)
+        F[N-1] = D*((-2*(u[N-1])+2*u[N-2])/(dx**2)+((2*beta)/dx) +source(Interior[N-1],F[N-1],*args))
         return F
-    Solution = root(SolveSource,x0 = Initial)
-    return GridSpace,Solution.x
-
-
-
-def FiniteDifferenceDirichlet(source,D,N,alpha,beta,*args): #Perfect
+    Solution = root(SolveSource,x0 = Guess)
+    return Interior,Solution.x
+def FiniteDifferenceDirichlet(source,D,N,alpha,beta,*args): 
     a = 0
     b = 1
     GridSpace = np.linspace(a,b,N+1)
     dx = (b-a)/N 
     Interior = GridSpace[1:-1]
-    Guess = Interior * 0.1
+    Guess = Interior * 0.5
     def SolveSource(u):
         F = np.zeros(N-1)
         F[0] = D*((u[1]-2*u[0]+alpha)/(dx**2))+source(Interior[0],F[0],*args)
@@ -48,14 +52,33 @@ def FiniteDifferenceDirichlet(source,D,N,alpha,beta,*args): #Perfect
         return F
     Solution = root(SolveSource,x0 = Guess) 
     return Interior,Solution.x
-
+def FiniteDifference(source,D,N,bc_type,alpha,beta,*args):
+    if bc_type == 'dirichlet':
+        if not isinstance(alpha,float):
+            raise ValueError("'alpha' must be a floating point number")
+        if not isinstance(beta,float):
+            raise ValueError("'beta' must be a floating point number")
+        Interior, Solution = FiniteDifferenceDirichlet(source,D,N,alpha,beta,*args)
+    elif bc_type == 'neumann':
+        if not isinstance(alpha,float):
+            raise ValueError("'alpha' must be a floating point number")
+        if not isinstance(beta,float):
+            raise ValueError("'beta' must be a floating point number")
+        Interior,Solution = FiniteDifferenceNeumann(source,D,N,alpha,beta,*args)
+    elif bc_type == 'robin':
+        if not isinstance(alpha,float):
+            raise ValueError("'alpha' must be a floating point number")
+        if not isinstance(beta,list):
+            raise ValueError("'beta' must be a list")
+        Interior,Solution = FiniteDifferenceRobin(source,D,N,alpha,beta,*args)
+    else:
+        raise ValueError("Boundary condition type is invalid, please input 'dirichlet','neumann' or 'robin'")
+    return Interior,Solution
 def source(x,f,beta):
-    return x*4 + beta
-
-x,y = FiniteDifferenceDirichlet(source,1,20,0.0,1.0,1)
+    return np.ones(np.size(x))
+x,y = FiniteDifference(source,1,20,'robin',0.0,[0.0,1.0],1)
 plt.plot(x,y)
 plt.show()
-
 
 # %%
 def PDE(x):

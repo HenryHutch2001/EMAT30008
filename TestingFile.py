@@ -1,78 +1,86 @@
+
 # %%
-from My_Functions import shooting,solve_to, solve_toRK
 import numpy as np
-from scipy.integrate import solve_ivp
-from scipy.optimize import root
 import matplotlib.pyplot as plt
-# %% Defining the Hopf Normal Form equation in Cartesian and Polar coordinates 
-
-def HopfNormalCartesian(t,y,beta): # Cartesian
-    u1,u2 = y
-    du1_dt = beta*u1 - u2 - u1*(u1**2 + u2**2)
-    du2_dt = u1 + beta*u2 - u2*(u1**2 + u2**2)
-    return [du1_dt,du2_dt]
-
-def HopfNormalPolar(t,y,beta): # Polar 
-    r,theta = y 
-    drdt = r * (beta - r**2 - 1)
-    dthetadt = 1
-    return [drdt, dthetadt]
-
-# %% Determining initial starting conditions using shooting for both forms of the ODE
-CartesianSolution = shooting([20,1,1],HopfNormalCartesian,2)
-PolarSolution = shooting([20,1,1],HopfNormalPolar,2)
-
-print(CartesianSolution,PolarSolution)
-
+from math import ceil
+from My_Functions import solve_toRK,solve_toEU
 # %%
+N = 100
+a = 0
+b = 1
+D = 1
+bc_left = 0
+bc_right = [1,0]
+GridSpace = np.linspace(a,b,N+1)
+x_ints = GridSpace[1:]
 
-Result = solve_ivp(HopfNormalPolar,[0,20],[1,1],args=(2,))
 
-plt.plot(Result.t,Result.y[0,:])
-plt.plot(Result.t,Result.y[1,:])
-plt.show()
+def q_func(t,x,u):
+    return np.ones(np.size(x))
 
-# %%
-t,x = solve_to(HopfNormalPolar,[1,1],0,20,0.001,2)
-plt.plot(t,x)
-plt.show()
+def IC(x):
+    return np.sin((np.pi*(x-a))/(b-a))
 
-# %% Attempting Natural Parameter Continuation for the Polar form:
+def CreateAandbDirichlet(N,a,b,bc_left,bc_right):
+    A = np.zeros((N-1,N-1))
+    dx = (b-a)/N
+    for i in range(0,N-1):
+        A[i,i] = -2
+    for i in range(0,N-2):
+        A[i,i+1] = A[i,i-1] = 1
+    B = np.zeros(N-1)
+    B[0] = bc_left
+    B[N-2] = bc_right
+    return A,B.T,dx
 
-def NaturalParamODE(ode,x0,p0,p1):
-    # Determining initial true solution using shooting
-    x = shooting(x0,ode,p0)
-    t = x[0]
-    x = x[1:len(x)]
-    p_range = np.linspace(p0,p1,1000)
-    Solutions = np.array([x])
-    ParameterValues = np.array([p0])
-    for i in range(0,len(p_range)-1):
-        p = p_range[i]
-        Prediction = Solutions[-1]
-        sol = root(ode,x0=Prediction,args=(Prediction,p))
-        if sol.success == True:
-            Solutions = np.vstack([Solutions,sol.x])
-            ParameterValues = np.append(ParameterValues,p)
-    return Solutions,ParameterValues
+def CreateAandbNeumann(N,a,b,bc_left,bc_right):
+    A = np.zeros((N,N))
+    dx = (b-a)/N
+    for i in range(0,N):
+        A[i,i] = -2
+    for i in range(0,N-1):
+        A[i,i+1] = A[i,i-1] = 1
+    A[N-1,N-2] = 1
+    B = np.zeros(N)
+    B[0] = bc_left
+    B[N-1] = 2*bc_right*dx
+    return A,B.T,dx
 
-x,p = NaturalParamODE(HopfNormalPolar,[30,0,1],0,2)
-print(x)
-# %%
-def Lorenz(t,xyz,s,r,b):
-    x,y,z = xyz
-    dx_dt = s*(y-x)
-    dy_dt = r*x - y - x*z
-    dz_dt = x*y - b*z
-    return [dx_dt,dy_dt,dz_dt]
+def CreateAandbRobin(N,a,b,bc_left,bc_right):
+    A = np.zeros((N,N))
+    dx = (b-a)/N
+    beta,gamma = bc_right
+    for i in range(0,N-1):
+        A[i,i] = -2
+    A[N-1,N-1] = -2*(1+gamma*dx)
+    for i in range(0,N-1):
+        A[i,i+1] = A[i,i-1] = 1
+    A[N-1,N-2] = 2
+    B = np.zeros(N)
+    B[0] = bc_left
+    B[N-1] = 2*beta*dx
+    return A,B.T,dx
 
-t,x= solve_toRK(Lorenz,[0,1,1.05],0,10,0.01,3,26.5,1)
-fig = plt.figure()
-ax = fig.gca(projection='3d')
+A_dd,b_dd,dx=CreateAandbRobin(N,a,b,bc_left,bc_right)
 
-ax.plot(x[:,0], x[:,1], x[:,2])
-ax.set_xlabel("X")
-ax.set_ylabel("Y")
-ax.set_zlabel("Z")
+def system(t,u,q,*args):
+    du_dt = (D/(dx**2))*(A_dd*u-b_dd-(dx**2)*q(x_ints,*args))
+    return du_dt
+
+t,x = solve_toRK(system,IC(x_ints),0,10,0.1,q_func,0,x_ints)
+plt.plot(x_ints,x[0,:])
 plt.show()
 # %%
+
+def CreateAandb(N,a,b,bc_type,bc_left,bc_right):
+    GridSpace = np.linspace(a,b,N+1)
+    if bc_type == 'dirichlet':
+        x_ints = GridSpace[1:-1]
+        A_dd,b_dd,dx=CreateAandbDirichlet(N,a,b,bc_left,bc_right)
+    elif bc_type == 'neumann':
+        x_ints = GridSpace[1:]
+        A_dd,b_dd,dx=CreateAandbNeumann(N,a,b,bc_left,bc_right)
+    elif bc_type == 'robin':
+        x_ints = GridSpace[1:]
+        A_dd,b_dd,dx=CreateAandbNeumann(N,a,b,bc_left,bc_right)
+    return A_dd,b_dd,x_ints,dx

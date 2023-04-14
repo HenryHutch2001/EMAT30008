@@ -432,3 +432,56 @@ def FiniteDifference(source,D,N,bc_type,alpha,beta,*args):
     else:
         raise ValueError("Boundary condition type is invalid, please input 'dirichlet','neumann' or 'robin'")
     return Interior,Solution
+
+def CreateAandbDirichlet(N,a,b,bc_left,bc_right):
+    A = np.zeros((N-1,N-1))
+    dx = (b-a)/N
+    for i in range(0,N-1):
+        A[i,i] = -2
+    for i in range(0,N-2):
+        A[i,i+1] = A[i,i-1] = 1
+    B = np.zeros(N-1)
+    B[0] = bc_left
+    B[N-2] = bc_right
+    return A,B.T,dx
+
+def CreateAandbNeumann(N,a,b,bc_left,bc_right):
+    A = np.zeros((N,N))
+    dx = (b-a)/N
+    for i in range(0,N):
+        A[i,i] = -2
+    for i in range(0,N-1):
+        A[i,i+1] = A[i,i-1] = 1
+    A[N-1,N-2] = 1
+    B = np.zeros(N)
+    B[0] = bc_left
+    B[N-1] = 2*bc_right*dx
+    return A,B.T,dx
+
+def CreateAandbRobin(N,a,b,bc_left,bc_right):
+    A = np.zeros((N,N))
+    dx = (b-a)/N
+    beta,gamma = bc_right
+    for i in range(0,N-1):
+        A[i,i] = -2
+    A[N-1,N-1] = -2*(1+gamma*dx)
+    for i in range(0,N-1):
+        A[i,i+1] = A[i,i-1] = 1
+    A[N-1,N-2] = 2
+    B = np.zeros(N)
+    B[0] = bc_left
+    B[N-1] = 2*beta*dx
+    return A,B.T,dx
+
+def CreateAandb(N,a,b,bc_type,bc_left,bc_right):
+    GridSpace = np.linspace(a,b,N+1)
+    if bc_type == 'dirichlet':
+        x_ints = GridSpace[1:-1]
+        A_dd,b_dd,dx=CreateAandbDirichlet(N,a,b,bc_left,bc_right)
+    elif bc_type == 'neumann':
+        x_ints = GridSpace[1:]
+        A_dd,b_dd,dx=CreateAandbNeumann(N,a,b,bc_left,bc_right)
+    elif bc_type == 'robin':
+        x_ints = GridSpace[1:]
+        A_dd,b_dd,dx=CreateAandbNeumann(N,a,b,bc_left,bc_right)
+    return A_dd,b_dd,x_ints,dx

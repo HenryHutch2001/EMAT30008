@@ -76,7 +76,8 @@ def FiniteDifference(source,D,N,bc_type,alpha,beta,*args):
     return Interior,Solution
 def source(x,f,beta):
     return np.ones(np.size(x))
-x,y = FiniteDifference(source,1,20,'robin',0.0,[0.0,1.0],1)
+
+x,y = FiniteDifference(source,1,20,'neumann',0.0,0.0,1)
 plt.plot(x,y)
 plt.show()
 

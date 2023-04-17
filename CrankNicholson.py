@@ -48,10 +48,10 @@ a = 0
 b = 1
 
 def f(x,*args):
-    return np.sin((math.pi*(x-a))/(b-a))
+    return np.sin(math.pi*x)
 
-def source(x,t):
-    return np.ones(np.size(x))
+def source(x,t,u):
+    return np.sin(math.pi*x)
 
 
 def CrankNicholsonDirichlet(N,domain_start,domain_end,D,t_final,dt,bc_left,bc_right,initial_condition,source,*args):  
@@ -61,10 +61,10 @@ def CrankNicholsonDirichlet(N,domain_start,domain_end,D,t_final,dt,bc_left,bc_ri
     C = dt*D/(dx**2)
     N_t = ceil(t_final/dt) 
     u = np.zeros((N_t+1, N-1))
-    u[0,:] = initial_condition(x_int,*args)
+    u[0,:] = initial_condition(x_int)
     LHS = ((np.identity(N-1))-((C/2)*A_dd))
     for n in range(0,N_t):
-        RHS = ((np.identity(N-1))+((C/2)*A_dd))@u[n] + C*b_dd + dt*source(x_int, (n+1)*dt)
+        RHS = ((np.identity(N-1))+((C/2)*A_dd))@u[n] + C*b_dd + dt*source(x_int, (n+1)*dt,u[n],*args)
         u[n+1] = np.linalg.solve(LHS,RHS)
     return x_int,u[-1,:]
 
@@ -75,10 +75,10 @@ def CrankNicholsonNeumann(N,domain_start,domain_end,D,t_final,dt,bc_left,bc_righ
     C = dt*D/(dx**2)
     N_t = ceil(t_final/dt) 
     u = np.zeros((N_t+1, N))
-    u[0,:] = initial_condition(x_int,*args)
+    u[0,:] = initial_condition(x_int)
     LHS = ((np.identity(N))-((C/2)*A_dd))
     for n in range(0,N_t):
-        RHS = ((np.identity(N))+((C/2)*A_dd))@u[n] + C*b_dd + dt*source(x_int, (n+1)*dt)
+        RHS = ((np.identity(N))+((C/2)*A_dd))@u[n] + C*b_dd + dt*source(x_int, (n+1)*dt,u[n],*args)
         u[n+1] = np.linalg.solve(LHS,RHS)
     return x_int,u[-1,:]
 
@@ -89,21 +89,14 @@ def CrankNicholsonRobin(N,domain_start,domain_end,D,t_final,dt,bc_left,bc_right,
     C = dt*D/(dx**2)
     N_t = ceil(t_final/dt) 
     u = np.zeros((N_t+1, N))
-    u[0,:] = initial_condition(x_int,*args)
+    u[0,:] = initial_condition(x_int)
     LHS = ((np.identity(N))-((C/2)*A_dd))
     for n in range(0,N_t):
-        RHS = ((np.identity(N))+((C/2)*A_dd))@u[n] + C*b_dd + dt*source(x_int, (n+1)*dt)
+        RHS = ((np.identity(N))+((C/2)*A_dd))@u[n] + C*b_dd + dt*source(x_int, (n+1)*dt,u[n],*args)
         u[n+1] = np.linalg.solve(LHS,RHS)
     return x_int,u[-1,:]
 
 
-
-x,y = CrankNicholsonDirichlet(70,0,1,0,1.0,0.1,0.0,3.0,f,source)
-
-
-
-plt.plot(x,y)
-plt.show()
 
 def CrankNicolson(N,domain_start,domain_end,D,t_final,dt,bc_type,bc_left,bc_right,initial_condition,source,*args):
     """
@@ -117,23 +110,71 @@ def CrankNicolson(N,domain_start,domain_end,D,t_final,dt,bc_type,bc_left,bc_righ
 
     WHERE:
 
-        N: 'N' is an integer value describing the number of points you'd like to discretise the domain into
+        N: 'N' is an integer value describing the number of points you'd like to discretise the domain into. The form of this input should be as follows;
 
-        domain_start: 'domain start' 
+            N = 1
 
+        domain_start/domain_end: 'domain_start' and 'domain_end are integer values describing the initial and final values in the spatial domain for which the solution is approximated for. The form of this input should be as follows;
 
+            domain_start = 0
+            domain_end = 1
+
+        D: 'D' is an integer/floating point value describing the diffusion coefficient of the diffusion equation. 
+        The form of this input should be as follows;
+
+            D = 0.5
+
+        t_final: 't_final' is an integer/floating point number defining the time that the approximation solves up to, starting at zero. 
+        The form of this input should be as follows;
+
+            t_final = 1
+
+        dt: 'dt' is a decimal value defining the time step size, the time domain is split into sections equal 
+        to the size of dt and the solition is calculated at each point. The form of this input should be as follows;
+
+            dt = 0.1
+
+        bc_left: 'bc_left' is a decimal value defining the left boundary condition. f(domain_start,t) = bc_left.  
+        The form of this input should be as follows;
+
+            bc_left = 0.0
+
+        bc_left: 'bc_right' is a decimal value defining the right boundary condition. f(domain_end,t) = bc_right.  
+        The form of this input should be as follows;
+
+            bc_right = 1.0
+
+        bc_type: 'bc_type' is a string describing the type of boundary conditions imposed on the equation, 
+        inputs are either 'dirichlet', 'neumann' or 'robin'. The form of this input should be as follows;
+
+            bc_type = 'neumann'
+
+        initial_condition: 'initial_condition' is a function imposing an initial condition on the solution, 
+        if no initial condition is wanted, input 'none' and the function will remove any condition. 
+        The form of this input should be as follows;
+
+            def f(x,*args):
+                return np.ones(size(x))
+
+        source: 'source' is a function describing the source term 'q(x,t,u;parameters)' 
+
+            def source(x,t,u):
+                return np.sin(math.pi*x)
+        
+    OUTPUT
+    ------
+
+    Returns 2 numpy arrays of equal lengths, with the first array containing the interior 
+    gridpoints and the second containing the solutions for these gridpoints.
 
     """
 
-    # Checks for N
     if N < 5:
         raise ValueError("'N' must be greater than 5 to provide an accurate representation of the solution")
     if not isinstance(N, int):
         raise ValueError("'N' must be an integer value")
     if N > 200:
         raise RuntimeError("The size of 'N' leads to large computational compexity")
-    
-    # Checks for domain values
 
     if not isinstance(domain_start,int):
         raise ValueError("'domain_start' must be an integer")
@@ -141,41 +182,35 @@ def CrankNicolson(N,domain_start,domain_end,D,t_final,dt,bc_type,bc_left,bc_righ
         raise ValueError("The starting point of the domain must be before the endpoint")
     if not isinstance(domain_end,int):
         raise ValueError("'domain_end' must be an integer value")
-    
-    # Checks for Diffusion coefficient
 
     if not isinstance(N,(float,int)):
         raise ValueError("'D' must be either a decimal or integer")
     if D < 0:
         raise ValueError("'D' must be a positive value")    
-    
-    # checks for t_final 
 
     if not isinstance(t_final,(float,int)):
         raise ValueError("'t_final' must be either a decimal or integer")
     if t_final < 0:
         raise ValueError("'t_final' must be a positive value")
-    
-    # checks for dt, need to check these with TA because very subjective dependent on the size of the time domain
 
     if not isinstance(dt,float):
         raise ValueError("'dt' must be a decimal value") 
-    # Checking boundary conditions
+
     if not isinstance(bc_left,float):
         raise ValueError("'bc_left must be a decimal value")
-    # Write seperate bc_right conditions for the different methods (robin)
-    # initial condition check
+
     if initial_condition == 'none':
         def initial_condition(x,*args):
             return 0
     elif callable(initial_condition) == False:
         raise TypeError("'initial_condition' must be a callable function")
-    # source checks
+
     if source == 'none':
         def source(x,*args):
             return 0
     elif callable(source) == False:
         raise TypeError("'source' must be a callable function")
+    
     if bc_type == 'dirichlet':
         if not isinstance(bc_right,float):
             raise ValueError("'bc_right' must be a decimal value")
@@ -188,9 +223,16 @@ def CrankNicolson(N,domain_start,domain_end,D,t_final,dt,bc_type,bc_left,bc_righ
         if not isinstance(bc_right,list):
             raise ValueError("'bc_right' must be a list containing both beta and gamma values")
         CrankNicholsonRobin(N,domain_start,domain_end,D,t_final,dt,bc_left,bc_right,initial_condition,source,*args)
+    else:
+        raise ValueError("'bc_type' must be either 'dirichlet', 'neumann' or 'robin'")
     return x,y 
 
+x,y = CrankNicolson(100,0,1,0.1,2,0.1,'dirichlet',0.0,0.0,f,source)
 
+print(type(y))
+print(type(x))
+print(math.exp(-0.2*math.pi**2))
 
-
+plt.plot(x,y)
+plt.show()
 

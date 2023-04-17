@@ -33,7 +33,7 @@ u = np.zeros((N_t+1, N-1))
 
 M = np.identity(N-1)-C*A_dd
 for n in range(0,N_t):
-    b = u[n] + C*b_dd + dt*source(x_int, (n+1)*dt)
+    b = u[n] + C*b_dd + dt*source(x_int,(n+1)*dt)
     u[n+1] = np.linalg.solve(M,b)
 
 plt.plot(x_int,u[-1,:])

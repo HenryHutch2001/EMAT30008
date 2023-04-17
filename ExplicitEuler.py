@@ -21,7 +21,7 @@ GridSpace = np.linspace(a,b,N+1) #Defining the gridspace
 x_int = GridSpace[1:-1] # Extracting the interior gridpoints from 'GridSpace'
 dx = (b-a)/N # Defining 'Delta x'
 # %%
-dt = 0.1
+dt = 0.001
 C = dt*D/(dx**2) # Rearranging the equation for C gives the equation for the time step
 t_final = 1 # Final time in the simulation 
 N_t = ceil(t_final/dt) # Determine the number of timesteps 

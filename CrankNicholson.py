@@ -48,10 +48,10 @@ a = 0
 b = 1
 
 def f(x,*args):
-    return np.sin(math.pi*x)
+    return np.zeros(np.size(x))
 
 def source(x,t,u):
-    return np.sin(math.pi*x)
+    return np.ones(np.size(x))
 
 
 def CrankNicholsonDirichlet(N,domain_start,domain_end,D,t_final,dt,bc_left,bc_right,initial_condition,source,*args):  
@@ -95,8 +95,6 @@ def CrankNicholsonRobin(N,domain_start,domain_end,D,t_final,dt,bc_left,bc_right,
         RHS = ((np.identity(N))+((C/2)*A_dd))@u[n] + C*b_dd + dt*source(x_int, (n+1)*dt,u[n],*args)
         u[n+1] = np.linalg.solve(LHS,RHS)
     return x_int,u[-1,:]
-
-
 
 def CrankNicolson(N,domain_start,domain_end,D,t_final,dt,bc_type,bc_left,bc_right,initial_condition,source,*args):
     """
@@ -168,49 +166,40 @@ def CrankNicolson(N,domain_start,domain_end,D,t_final,dt,bc_type,bc_left,bc_righ
     gridpoints and the second containing the solutions for these gridpoints.
 
     """
-
     if N < 5:
         raise ValueError("'N' must be greater than 5 to provide an accurate representation of the solution")
     if not isinstance(N, int):
         raise ValueError("'N' must be an integer value")
     if N > 200:
         raise RuntimeError("The size of 'N' leads to large computational compexity")
-
     if not isinstance(domain_start,int):
         raise ValueError("'domain_start' must be an integer")
     if domain_start > domain_end:
         raise ValueError("The starting point of the domain must be before the endpoint")
     if not isinstance(domain_end,int):
         raise ValueError("'domain_end' must be an integer value")
-
     if not isinstance(N,(float,int)):
         raise ValueError("'D' must be either a decimal or integer")
     if D < 0:
         raise ValueError("'D' must be a positive value")    
-
     if not isinstance(t_final,(float,int)):
         raise ValueError("'t_final' must be either a decimal or integer")
     if t_final < 0:
         raise ValueError("'t_final' must be a positive value")
-
     if not isinstance(dt,float):
         raise ValueError("'dt' must be a decimal value") 
-
     if not isinstance(bc_left,float):
         raise ValueError("'bc_left must be a decimal value")
-
     if initial_condition == 'none':
         def initial_condition(x,*args):
             return 0
     elif callable(initial_condition) == False:
         raise TypeError("'initial_condition' must be a callable function")
-
     if source == 'none':
         def source(x,*args):
             return 0
     elif callable(source) == False:
         raise TypeError("'source' must be a callable function")
-    
     if bc_type == 'dirichlet':
         if not isinstance(bc_right,float):
             raise ValueError("'bc_right' must be a decimal value")
@@ -227,12 +216,11 @@ def CrankNicolson(N,domain_start,domain_end,D,t_final,dt,bc_type,bc_left,bc_righ
         raise ValueError("'bc_type' must be either 'dirichlet', 'neumann' or 'robin'")
     return x,y 
 
-x,y = CrankNicolson(100,0,1,0.1,2,0.1,'dirichlet',0.0,0.0,f,source)
 
+x,y = CrankNicolson(100,0,1,1,2,0.1,'dirichlet',0.0,0.0,'none',source)
 print(type(y))
 print(type(x))
 print(math.exp(-0.2*math.pi**2))
-
 plt.plot(x,y)
 plt.show()
 

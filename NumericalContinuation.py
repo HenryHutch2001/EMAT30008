@@ -1,6 +1,5 @@
 # %%
 from My_Functions import shooting
-import scipy
 from scipy.optimize import root
 import numpy as np
 import matplotlib.pyplot as plt
@@ -8,7 +7,6 @@ from scipy.integrate import solve_ivp
 # %%
 def function(x,c):
     return x**3 -x+c
-# %%
 # %%
 def NumCont(f,x0,p0,p1):
     p_range = np.linspace(p0,p1,1000)
@@ -87,4 +85,28 @@ def ODEStep(ode,t,x0,p0,p1):
             p_value = np.append(p_value,p)
         return solutions[1:],p_value[1:]
 x,y = ODEStep(HopfNormal,1,-10,-3,3)
+# %%
+
+def PredPrey(y,t,b): 
+    a = 1
+    d = 0.1
+    dx_dt = y[0]*(1-y[0]) - (a*y[0]*y[1])/(d+y[0]) 
+    dy_dt = b*y[1]*(1-(y[1]/y[0]))
+    return [dx_dt, dy_dt] 
+
+def NContinuation(ode,t,x0,p0,p1):
+    p_range = np.linspace(p0,p1,100)
+    solutions = np.array([x0])
+    for i in range(0,len(p_range)-1):
+        p = p_range[i]
+        approx = solutions[-1]
+        sol = root(ode,x0=approx,args=(t,p))
+        if sol.success == True:
+            solutions = np.vstack([solutions,sol.x])
+    return p_range,solutions
+    
+x,y = NContinuation(PredPrey,1,[4,6],0.1,1)
+plt.plot(x,y,'.')
+plt.show()
+
 # %%

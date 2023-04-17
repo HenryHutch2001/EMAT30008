@@ -10,7 +10,7 @@ def euler_step(f,xn,t,h,*args):
     """
     A function that uses the euler approximation method to find a single step of the solution
 
-    SYNTAXfe
+    SYNTAX
     ------
     The function is called in the following way:
 
@@ -483,5 +483,5 @@ def CreateAandb(N,a,b,bc_type,bc_left,bc_right):
         A_dd,b_dd,dx=CreateAandbNeumann(N,a,b,bc_left,bc_right)
     elif bc_type == 'robin':
         x_ints = GridSpace[1:]
-        A_dd,b_dd,dx=CreateAandbNeumann(N,a,b,bc_left,bc_right)
+        A_dd,b_dd,dx=CreateAandbRobin(N,a,b,bc_left,bc_right)
     return A_dd,b_dd,x_ints,dx

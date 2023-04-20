@@ -217,7 +217,7 @@ def CrankNicolson(N,domain_start,domain_end,D,t_final,dt,bc_type,bc_left,bc_righ
     return x,y 
 
 
-x,y = CrankNicolson(100,0,1,1,2,0.1,'dirichlet',0.0,0.0,'none',source)
+x,y = CrankNicolson(100,0,1,1,2,0.1,'dirichlet',0.0,0.0,f,'none')
 print(type(y))
 print(type(x))
 print(math.exp(-0.2*math.pi**2))

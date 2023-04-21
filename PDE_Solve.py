@@ -1,11 +1,7 @@
 import numpy as np
-import matplotlib.pyplot as plt
-from sys import exit
-import scipy
-from scipy.integrate import solve_ivp
 from scipy.optimize import root
 from math import ceil
-from My_Functions import solve_toRK
+from ODE_Solve import solve_toRK
 
 def CreateAandb(N,a,b,bc_type,bc_left,bc_right):
     """
@@ -99,6 +95,8 @@ def CreateAandb(N,a,b,bc_type,bc_left,bc_right):
     elif bc_type == 'robin':
         x_ints = GridSpace[1:]
         A_dd,b_dd,dx=CreateAandbRobin(N,a,b,bc_left,bc_right)
+    else:
+        raise ValueError("Boundary condition type is invalid, please input 'dirichlet','neumann' or 'robin'")
     return A_dd,b_dd,x_ints,dx
 
 def FiniteDifference(source,D,N,bc_type,alpha,beta,*args):
@@ -199,21 +197,18 @@ def FiniteDifference(source,D,N,bc_type,alpha,beta,*args):
     if not isinstance(N, int):
         raise ValueError("'N' must be an integer value")
     if N > 200:
-        raise RuntimeError("The size of 'N' leads to large computational compexity")
+        raise RuntimeWarning("The size of 'N' leads to large computational compexity")
     if not isinstance(D,(float,int)):
         raise ValueError("'D' must be either a positive decimal or integer")
     if D < 0:
         raise ValueError("'D' must be a positive value")    
     if not isinstance(alpha,float):
         raise ValueError("'alpha' must be a decimal value")
-    if not isinstance(beta,float):
-        raise ValueError("'beta' must be a decimal value")
     if source == 'none':
         def source(x,*args):
             return 0
     elif callable(source) == False:
         raise TypeError("'source' must be a callable function")
-
     if bc_type == 'dirichlet':
         if not isinstance(alpha,float):
             raise ValueError("'alpha' must be a floating point number")
@@ -304,14 +299,14 @@ def ExplicitEuler(N,domain_start,domain_end,D,t_final,dt,bc_left,bc_right,initia
     if not isinstance(N, int) or N <= 5:
         raise ValueError("N must be a positive integer greater than 5 to provide an accurate representation of the solution")
     if N > 200:
-        raise RuntimeError("The size of 'N' leads to large computational compexity")
+        raise RuntimeWarning("The size of 'N' leads to large computational compexity")
     if not isinstance(domain_start,int):
         raise ValueError("'domain_start' must be an integer")
     if domain_start > domain_end:
         raise ValueError("The starting point of the domain must be before the endpoint")
     if not isinstance(domain_end,int):
         raise ValueError("'domain_end' must be an integer value")
-    if not isinstance(N,(float,int)):
+    if not isinstance(D,(float,int)):
         raise ValueError("'D' must be either a decimal or integer")
     if D < 0:
         raise ValueError("'D' must be a positive value")    
@@ -323,6 +318,8 @@ def ExplicitEuler(N,domain_start,domain_end,D,t_final,dt,bc_left,bc_right,initia
         raise ValueError("'dt' must be a decimal value") 
     if not isinstance(bc_left,float):
         raise ValueError("'bc_left must be a decimal value")
+    if not isinstance(bc_right,float):
+        raise ValueError("'bc_right must be a decimal value")
     if initial_condition == 'none':
         def initial_condition(x,*args):
             return 0
@@ -482,14 +479,14 @@ def ImplicitEuler(N,domain_start,domain_end,D,t_final,dt,bc_type,bc_left,bc_righ
     if not isinstance(N, int):
         raise ValueError("'N' must be an integer value")
     if N > 300:
-        raise RuntimeError("The size of 'N' leads to large computational compexity")
+        raise RuntimeWarning("The size of 'N' leads to large computational compexity")
     if not isinstance(domain_start,int):
         raise ValueError("'domain_start' must be an integer")
     if domain_start > domain_end:
         raise ValueError("The starting point of the domain must be before the endpoint")
     if not isinstance(domain_end,int):
         raise ValueError("'domain_end' must be an integer value")
-    if not isinstance(N,(float,int)):
+    if not isinstance(D,(float,int)):
         raise ValueError("'D' must be either a decimal or integer")
     if D < 0:
         raise ValueError("'D' must be a positive value")    
@@ -644,14 +641,14 @@ def CrankNicolson(N,domain_start,domain_end,D,t_final,dt,bc_type,bc_left,bc_righ
     if not isinstance(N, int):
         raise ValueError("'N' must be an integer value")
     if N > 300:
-        raise RuntimeError("The size of 'N' leads to large computational compexity")
+        raise RuntimeWarning("The size of 'N' leads to large computational compexity")
     if not isinstance(domain_start,int):
         raise ValueError("'domain_start' must be an integer")
     if domain_start > domain_end:
         raise ValueError("The starting point of the domain must be before the endpoint")
     if not isinstance(domain_end,int):
         raise ValueError("'domain_end' must be an integer value")
-    if not isinstance(N,(float,int)):
+    if not isinstance(D,(float,int)):
         raise ValueError("'D' must be either a decimal or integer")
     if D < 0:
         raise ValueError("'D' must be a positive value")    
@@ -764,14 +761,14 @@ def RKSolver(N,domain_start,domain_end,D,t_final,dt,bc_type,bc_left,bc_right,ini
     if not isinstance(N, int):
         raise ValueError("'N' must be an integer value")
     if N > 300:
-        raise RuntimeError("The size of 'N' leads to large computational compexity")
+        raise RuntimeWarning("The size of 'N' leads to large computational compexity")
     if not isinstance(domain_start,int):
         raise ValueError("'domain_start' must be an integer")
     if domain_start > domain_end:
         raise ValueError("The starting point of the domain must be before the endpoint")
     if not isinstance(domain_end,int):
         raise ValueError("'domain_end' must be an integer value")
-    if not isinstance(N,(float,int)):
+    if not isinstance(D,(float,int)):
         raise ValueError("'D' must be either a decimal or integer")
     if D < 0:
         raise ValueError("'D' must be a positive value")    
@@ -801,8 +798,20 @@ def RKSolver(N,domain_start,domain_end,D,t_final,dt,bc_type,bc_left,bc_right,ini
         A_dd,b_dd,x_int,dx = CreateAandb(N,a,b,'neumann',bc_left,bc_right)
     elif bc_type == 'robin':
         A_dd,b_dd,x_int,dx = CreateAandb(N,a,b,'robin',bc_left,bc_right)
+    
     def system(t,u,source,*args):
         du_dt = (D/(dx**2))*(A_dd*u-b_dd-(dx**2)*source(t,x_int,u,*args))
         return du_dt
+    
     t,u = solve_toRK(system,initial_condition(x_int),0,t_final,dt,source,*args)
+    
     return x_int,u[0,:],t
+
+def SolvePDE(Method,N,domain_start,domain_end,D,t_final,dt,bc_type,bc_left,bc_right,initial_condition,source,*args):
+    if Method == 'implicit euler':
+        x,y = ImplicitEuler(N,domain_start,domain_end,D,t_final,dt,bc_type,bc_left,bc_right,initial_condition,source,*args)
+    elif Method == 'crank nicolson':
+        x,y = CrankNicolson(N,domain_start,domain_end,D,t_final,dt,bc_type,bc_left,bc_right,initial_condition,source,*args)
+    elif Method == 'rk4':
+        x,y = RKSolver(N,domain_start,domain_end,D,t_final,dt,bc_type,bc_left,bc_right,initial_condition,source,*args)
+    return x,y

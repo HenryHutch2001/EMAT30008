@@ -432,6 +432,7 @@ def ImplicitEuler(N,domain_start,domain_end,D,t_final,dt,bc_type,bc_left,bc_righ
         if dt > dt_max:
             raise ValueError("Time step is too large to satisfy stability condition.")
         N_t = ceil(t_final/dt)
+
         u = np.zeros((N_t+1, N-1))
         u[0,:] = initial_condition(x_int)
         M = np.identity(N-1)-C*A_dd
@@ -798,13 +799,10 @@ def RKSolver(N,domain_start,domain_end,D,t_final,dt,bc_type,bc_left,bc_right,ini
         A_dd,b_dd,x_int,dx = CreateAandb(N,a,b,'neumann',bc_left,bc_right)
     elif bc_type == 'robin':
         A_dd,b_dd,x_int,dx = CreateAandb(N,a,b,'robin',bc_left,bc_right)
-    
     def system(t,u,source,*args):
         du_dt = (D/(dx**2))*(A_dd*u-b_dd-(dx**2)*source(t,x_int,u,*args))
         return du_dt
-    
     t,u = solve_toRK(system,initial_condition(x_int),0,t_final,dt,source,*args)
-    
     return x_int,u[0,:],t
 
 def SolvePDE(Method,N,domain_start,domain_end,D,t_final,dt,bc_type,bc_left,bc_right,initial_condition,source,*args):

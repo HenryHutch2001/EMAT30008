@@ -216,6 +216,20 @@ def CubicContStep(f,x0,p0,p1):
     return v0,v1
 
 def PseudoCont(f,x0,p0,p1):
+    def CubicContStep(f,x0,p0,p1):
+        p_range = np.linspace(p0,p1,10000)
+        solutions = np.array([x0])
+        p_value = np.array([p0])
+        for i in range(0,len(p_range)-1):
+            p = p_range[i]
+            predicted_value = solutions[-1]
+            sol = root(f,x0=predicted_value,args=(p,))
+        if sol.success == True:
+            solutions = np.append(solutions,sol.x)
+            p_value = np.append(p_value,p)
+        v0 = np.array([p_value[1],solutions[1]]) 
+        v1 = np.array([p_value[2],solutions[2]])
+        return v0,v1
     def conditions(input):
         Condition1=f(input[0],input[1])
         Condition2=np.dot(((input)-approx),secant)
@@ -241,16 +255,3 @@ def PseudoCont(f,x0,p0,p1):
             p_value = np.append(p_value,sol.x[0])
             p = sol.x[0]
     return p_value, solutions
-
-
-    GridSpace = np.linspace(a,b,N+1)
-    if bc_type == 'dirichlet':
-        x_ints = GridSpace[1:-1]
-        A_dd,b_dd,dx=CreateAandbDirichlet(N,a,b,bc_left,bc_right)
-    elif bc_type == 'neumann':
-        x_ints = GridSpace[1:]
-        A_dd,b_dd,dx=CreateAandbNeumann(N,a,b,bc_left,bc_right)
-    elif bc_type == 'robin':
-        x_ints = GridSpace[1:]
-        A_dd,b_dd,dx=CreateAandbRobin(N,a,b,bc_left,bc_right)
-    return A_dd,b_dd,x_ints,dx

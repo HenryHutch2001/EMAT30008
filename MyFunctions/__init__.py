@@ -1,0 +1,2 @@
+from MyFunctions.ODE_Solve import solve_to,shooting,NumCont,PseudoCont
+from MyFunctions.PDE_Solve import ExplicitEuler,RKSolver,ImplicitEuler,CrankNicolson,CreateAandb,FiniteDifference

@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.optimize import root
 from math import ceil
-from ODE_Solve import solve_toRK
+from MyFunctions.ODE_Solve import solve_toRK
 
 def CreateAandb(N,a,b,bc_type,bc_left,bc_right):
     """

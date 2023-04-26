@@ -1,5 +1,5 @@
 import pytest
-from PDE_Solve import CreateAandb,FiniteDifference,ExplicitEuler,ImplicitEuler,CrankNicolson,RKSolver
+from MyFunctions.PDE_Solve import CreateAandb,FiniteDifference,ExplicitEuler,ImplicitEuler,CrankNicolson,RKSolver
 import numpy as np
 
 def source1(x,f):

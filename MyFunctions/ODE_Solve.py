@@ -5,12 +5,12 @@ from sys import exit
 import scipy
 from scipy.integrate import solve_ivp
 from scipy.optimize import root
-# %%
+
 def euler_step(f,xn,t,h,*args):
     f = np.array(f(t,xn,*args))
     x = xn + h*f
     return x
-# %%
+
 def solve_toEU(f,x0,t1,t2,h,*args):
    if t1 <0:
     raise ValueError('Time must be a positive integer')
@@ -25,7 +25,7 @@ def solve_toEU(f,x0,t1,t2,h,*args):
         Value = euler_step(f,x[i-1],t[i-1],h,*args)
         x = np.vstack([x, Value]) 
    return t,x 
-# %%
+
 def rk_step(f,xn,t,h,*args):
     k1 = np.array(f(t,xn,*args))
     k2 = np.array(f(t+h/2,xn + h*k1/2,*args))
@@ -33,7 +33,7 @@ def rk_step(f,xn,t,h,*args):
     k4 = np.array(f(t+h,xn+(h*k3),*args))
     x = xn + (h/6)*(k1 + 2*k2 + 2*k3 + k4)
     return x
-# %%
+
 def solve_toRK(f,x0,t1,t2,h,*args):
    if t1 <0:
     raise ValueError('Time must be a positive integer')
@@ -48,7 +48,7 @@ def solve_toRK(f,x0,t1,t2,h,*args):
         Value = rk_step(f,x[i-1],t[i-1],h,*args)
         x = np.vstack([x,Value])
    return t,x   
-# %%
+
 def solve_to(f,x0,t1,t2,h,solver,*args):
     """
    A function that uses methods of approximation to estimate the values of an ODE between a given timespan
@@ -144,7 +144,6 @@ def solve_to(f,x0,t1,t2,h,solver,*args):
         raise ValueError("Please provide a documented numerical approximation technique")
     return t,x
      
-# %%
 def shooting(x,ode,*args):
     """
     A function that uses the numerical shooting method in order to find the limit cycles of an ode
@@ -154,6 +153,8 @@ def shooting(x,ode,*args):
     The function is called the following way;
 
     shooting(x0,ode):
+
+        WHERE:
 
         x0: the x0 input is a list containing an initial guess of the initial values of the limit cycle for the specified ode, the form of
         this input should be as follows;
@@ -177,6 +178,10 @@ def shooting(x,ode,*args):
     ------
         The shooting function returns the correct initial values of the limit cycle
     """
+    if callable(ode) == False:
+        raise TypeError("'ode' must be a callable function")
+    if not isinstance(x,(list)):
+        raise ValueError("'x' must be of the form [x00,x01,...,x0n,T]")
     def shooting1(x,ode,*args):
         Condition1 = x[1:len(x)]-solve_ivp(ode,[0,x[0]],x[1:len(x)],args=([*args])).y[:,-1]
         Condition2 = ode(0,x[1:len(x)],*args)[0]
@@ -185,20 +190,6 @@ def shooting(x,ode,*args):
     if Result.success == False:
        raise ValueError('Periodic Orbit does not exist')
     return(Result.x)
-
-# %%
-def NumCont(f,x0,p0,p1):
-    p_range = np.linspace(p0,p1,1000)
-    solutions = np.array([x0])
-    p_value = np.array([p0])
-    for i in range(0,len(p_range)-1):
-        p = p_range[i]
-        predicted_value = solutions[-1]
-        sol = root(f,x0=predicted_value,args=(p))
-        if sol.success == True:
-            solutions = np.append(solutions,sol.x)
-            p_value = np.append(p_value,p)
-    return p_value[1:],solutions[1:]
 
 def CubicContStep(f,x0,p0,p1):
     p_range = np.linspace(p0,p1,10000)
@@ -215,43 +206,99 @@ def CubicContStep(f,x0,p0,p1):
     v1 = np.array([p_value[2],solutions[2]])
     return v0,v1
 
-def PseudoCont(f,x0,p0,p1):
-    def CubicContStep(f,x0,p0,p1):
-        p_range = np.linspace(p0,p1,10000)
+def Continuation(f,x0,p0,p1,type):
+    """
+    A function that performs parameter continuation on an arbitrary 1D function using either natural parameter continuation or psuedo-arc-length continuation
+
+    SYNTAX
+    ------
+    The function is called in the following way:
+
+    Continuation(f,x0,p0,p1,type)
+
+        WHERE:
+
+        f: 'f' is the function you'd like to perform parameter continuation on, f must be callable. The form of this input should be as follows:
+
+            def f(x,c):
+                return x**3 -x + c
+
+        x0: 'x0' is the initial condition you'd like to start your continuation from, the form of this input is as follows:
+
+            x0 = 1.0
+
+        p0: 'p0' is the initial parameter value you'd like to start the continuation from. The form of this input should be as follows:
+
+            p0 = -2.0
+
+        p1: 'p1' is the final parameter value you'd like to perform the continuation to  
+
+        type: 'type' is a string specifying the type of continuation you'd like to perform on the function 'f'. The form of this input should be as follows:
+
+         type = 'natural'
+
+    OUTPUT 
+    ------
+        The function returns the parameter values and their corresponding solutions as 2 numpy arrays of equal length.
+    """
+    def NumCont(f,x0,p0,p1):
+        p_range = np.linspace(p0,p1,1000)
         solutions = np.array([x0])
         p_value = np.array([p0])
         for i in range(0,len(p_range)-1):
             p = p_range[i]
             predicted_value = solutions[-1]
-            sol = root(f,x0=predicted_value,args=(p,))
-        if sol.success == True:
-            solutions = np.append(solutions,sol.x)
-            p_value = np.append(p_value,p)
-        v0 = np.array([p_value[1],solutions[1]]) 
-        v1 = np.array([p_value[2],solutions[2]])
-        return v0,v1
-    def conditions(input):
-        Condition1=f(input[0],input[1])
-        Condition2=np.dot(((input)-approx),secant)
-        return [Condition1,Condition2]
-    first,second = CubicContStep(f,x0,p0,p1)
-    solutions = np.array([first[1],second[1]])
-    p_value = np.array([first[0],second[0]])
-    v0 = first
-    v1 = second
-    secant = v1-v0
-    approx = v1+secant
-    p = p0
-    while p >=p0 and p<=p1:
+            sol = root(f,x0=predicted_value,args=(p))
+            if sol.success == True:
+                solutions = np.append(solutions,sol.x)
+                p_value = np.append(p_value,p)
+        return p_value[1:],solutions[1:]
+    
+    def PseudoCont(f,x0,p0,p1):
+        def conditions(input):
+            Condition1=f(input[0],input[1])
+            Condition2=np.dot(((input)-approx),secant)
+            return [Condition1,Condition2]
+        first,second = CubicContStep(f,x0,p0,p1)
+        solutions = np.array([first[1],second[1]])
+        p_value = np.array([first[0],second[0]])
+        v0 = first
+        v1 = second
         secant = v1-v0
         approx = v1+secant
-        sol = root(conditions,x0=approx,tol=1e-6)
-        v0 = v1
-        v1 = np.array([sol.x[0],sol.x[1]])
-        secant = v1-v0
-        approx = v1+secant
-        if sol.success == True:
-            solutions = np.append(solutions,sol.x[1])
-            p_value = np.append(p_value,sol.x[0])
+        p = p0
+        while p >=p0 and p<=p1:
+            secant = v1-v0
+            approx = v1+secant
+            sol = root(conditions,x0=approx,tol=1e-6)
+            v0 = v1
+            v1 = np.array([sol.x[0],sol.x[1]])
+            secant = v1-v0
+            approx = v1+secant
+            if sol.success == True:
+                solutions = np.append(solutions,sol.x[1])
+                p_value = np.append(p_value,sol.x[0])   
             p = sol.x[0]
-    return p_value, solutions
+        return p_value, solutions
+    if callable(f) == False:
+        raise TypeError("'f' must be a callable function")
+    if not isinstance(x0,(int,float)):
+        raise ValueError("'x0' must be either a decimal or integer")
+    if not isinstance(p0,(float,int)):
+        raise ValueError("p0 must be either a decimal or integer")
+    if not isinstance(p1,(float,int)):
+        raise ValueError("p0 must be either a decimal or integer")
+    if p1 < p0:
+        raise ValueError("'p1' must be greater than 'p0'")
+    if type == 'natural':
+        if not isinstance(type, str):
+            raise ValueError("'type' must be a string describing the type of continuation you'd like to perform, enter either 'natural' or 'psuedo'")
+        x,y = NumCont(f,x0,p0,p1)
+    elif type == 'pseudo':
+        if not isinstance(type, str):
+            raise ValueError("'type' must be a string describing the type of continuation you'd like to perform, enter either 'natural' or 'psuedo'")
+        x,y = PseudoCont(f,x0,p0,p1)
+    else:
+        raise ValueError("Invalid input, please enter either 'natural' or 'pseudo'")
+    return x,y 
+

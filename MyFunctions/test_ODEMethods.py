@@ -42,7 +42,6 @@ def test_output_typeRK():
     with pytest.raises(ValueError):
         solve_toRK(ode,[1,1],1,0,0.1)
 
-
 def test_SolveTo():
     t,x = solve_to(ode,[1,1],0,1,0.01,'rk4')
     assert isinstance(t,np.ndarray)

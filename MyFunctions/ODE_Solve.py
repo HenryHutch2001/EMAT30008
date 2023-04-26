@@ -6,6 +6,7 @@ import scipy
 from scipy.integrate import solve_ivp
 from scipy.optimize import root
 
+
 def euler_step(f,xn,t,h,*args):
     f = np.array(f(t,xn,*args))
     x = xn + h*f
@@ -264,8 +265,6 @@ def Continuation(f,x0,p0,p1,type):
         p_value = np.array([first[0],second[0]])
         v0 = first
         v1 = second
-        secant = v1-v0
-        approx = v1+secant
         p = p0
         while p >=p0 and p<=p1:
             secant = v1-v0
@@ -301,4 +300,3 @@ def Continuation(f,x0,p0,p1,type):
     else:
         raise ValueError("Invalid input, please enter either 'natural' or 'pseudo'")
     return x,y 
-
